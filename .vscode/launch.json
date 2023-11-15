@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "Fortran Launch (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "FMake"
+        }
+    ]
+}
