@@ -13,18 +13,22 @@ MODULE MDRutinas
     real (kind=8), intent(in) :: L
     real (kind=8), allocatable :: r(:,:)
     real(kind=8):: dl, dN
-    integer :: p, i, j, k
+    integer :: p, i, j, k, fin
 
     ! Particulas que entran en un lado L
-    dN = INT(N**(Real(1.0/3.0))) !!!! PROBLEMA
+    dN = CEILING(N**(Real(1.0/3.0))) !!!! PROBLEMA. Redondeo a int superior.
+
     ! Lado de un volumen de particula en la caja de lado L
     dl = L / dN
-
-    p=1
-    do while(p <= N)
-        do i = 1, dN
-            r(i,p) = [dl/2, dL/2, dL/2]
-        end do
+    fin = INT(dN -1)
+    do p = 1, N
+        do i = 0, fin
+            do j = 0, fin
+                do k = 0, fin
+                    r(p,:) = [REAL(i*dl)+dl/2, REAL(j*dL)+dL/2, REAL(k*dL)+dL/2]
+                end do
+            end do
+        end do    
     end do
 
  END SUBROUTINE Init_pos

@@ -1,4 +1,4 @@
 {
     "cmake.configureOnOpen": false,
-    "fortran.fortls.disabled": true
+    "fortran.fortls.disabled": false
 }

@@ -1,9 +1,9 @@
 ! Variables globales
-MODULE Globals
+MODULE globals
 
     IMPLICIT NONE
-    integer :: N
-    real(kind=8), allocatable :: r(:,:), v(:,:), f(:,:)
-    real(kind=8):: L
+    integer, public :: N
+    real(kind=8), allocatable , public:: r(:,:), v(:,:), f(:,:)
+    real(kind=8), public:: L
 
-end MODULE Globals
+end MODULE globals
