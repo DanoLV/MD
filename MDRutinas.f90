@@ -20,17 +20,36 @@ MODULE MDRutinas
 
     ! Lado de un volumen de particula en la caja de lado L
     dl = L / dN
-    fin = INT(dN -1)
-    do p = 1, N
-        do i = 0, fin
-            do j = 0, fin
-                do k = 0, fin
+    fin = INT(dN )
+    p = 1
+    i=0
+        do while (i .lt. fin .and. p .le. N) 
+            j=0
+            do while (j .lt. fin .and. p .le. N) 
+                k = 0
+                do while (k .lt. fin .and. p .le. N) 
                     r(p,:) = [REAL(i*dl)+dl/2, REAL(j*dL)+dL/2, REAL(k*dL)+dL/2]
+                    p = p + 1
+                    k = k + 1
                 end do
+                j = j + 1
             end do
+            i = i + 1
         end do    
-    end do
 
  END SUBROUTINE Init_pos
+
+ SUBROUTINE Init_pos_rand(N,L,r)
+
+    integer, intent(in)  :: N
+    real (kind=8), intent(in) :: L
+    real (kind=8), allocatable :: r(:,:)
+    integer :: p
+    
+    do p = 1, N
+        r(p,:) = L* [uni(), uni(), uni()]
+    end do
+
+ END SUBROUTINE Init_pos_rand
 
 END MODULE MDRutinas
