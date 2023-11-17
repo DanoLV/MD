@@ -17,7 +17,6 @@ program md_g3
     ! Recibir parametros N, L
     N = 9
     L = 9
-    print*, N,L
 
     ! Inicializar variables
     allocate(r(N,3))
@@ -33,7 +32,7 @@ program md_g3
     !     print*, r(i,:)
     ! end do
 
-    call V_interaccion(u,r(1,:),r(2,:),sigma,epsilon)
+    call V_interaccion(u,N,r,sigma,epsilon)
     print *, u
 
     ! Ciclos de MD

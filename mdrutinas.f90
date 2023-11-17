@@ -52,11 +52,24 @@ MODULE mdrutinas
 
  END SUBROUTINE Init_pos_rand
 
- SUBROUTINE V_interaccion(u,p1,p2,sigma,epsilon)
-    REAL(kind=8), intent(in):: sigma,epsilon,p1(3),p2(3)
-    REAL(kind=8):: u
+ SUBROUTINE V_interaccion(u,N,r,sigma,epsilon)
+    REAL(kind=8), intent(in):: sigma,epsilon,r(N,3)
+    INTEGER, intent(in):: N
+    REAL(kind=8), intent(out):: u
+    INTEGER :: i, j
+    REAL(kind=8):: a
 
-    u = U_r(p1,p2,sigma,epsilon)
+    !Inicializo potencial
+    u = 0
+
+    !Calculo todas las interacciones de pares
+    do i = 1, N-1
+        do j = i + 1, N
+            u = u + U_r(r(i,:),r(j,:),sigma,epsilon)      
+        end do
+    end do 
+
+    return
 
  END SUBROUTINE V_interaccion
 
