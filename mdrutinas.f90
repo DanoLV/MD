@@ -58,7 +58,7 @@ MODULE mdrutinas
 
     u = U_r(p1,p2,sigma,epsilon)
 
- END SUBROUTINE U_interaccion
+ END SUBROUTINE V_interaccion
 
  REAL(kind=8) FUNCTION U_r(p1,p2,sigma,epsilon)
     REAL(kind=8), intent(in):: p1(3),p2(3),sigma,epsilon
