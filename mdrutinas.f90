@@ -2,7 +2,7 @@
 MODULE mdrutinas
     use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
     use ziggurat
-    use Globals
+    use globals
     IMPLICIT NONE
 
  CONTAINS

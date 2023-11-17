@@ -7,9 +7,11 @@ program md_g3
     use mdrutinas
 
     implicit none
-    integer :: i
+    integer :: i,N
+    real(kind=8):: L,sigma,epsilon,u
+    real(kind=8), allocatable ::r(:,:)
 
-    sigma = 1
+    sigma= 1
     epsilon = 1
 
     ! Recibir parametros N, L
