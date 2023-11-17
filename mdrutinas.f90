@@ -1,5 +1,5 @@
 ! Rutinas generales de MD
-MODULE MDRutinas
+MODULE mdrutinas
     use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
     use ziggurat
     use Globals
@@ -52,4 +52,23 @@ MODULE MDRutinas
 
  END SUBROUTINE Init_pos_rand
 
-END MODULE MDRutinas
+ SUBROUTINE V_interaccion(u,p1,p2,sigma,epsilon)
+    REAL(kind=8), intent(in):: sigma,epsilon,p1(3),p2(3)
+    REAL(kind=8):: u
+
+    u = U_r(p1,p2,sigma,epsilon)
+
+ END SUBROUTINE U_interaccion
+
+ REAL(kind=8) FUNCTION U_r(p1,p2,sigma,epsilon)
+    REAL(kind=8), intent(in):: p1(3),p2(3),sigma,epsilon
+    REAL(kind=8) :: r 
+
+    !Calculo distancia entre particulas
+    r = sqrt((p1(1)-p2(1))**2+(p1(2)-p2(2))**2+(p1(3)-p2(3))**2)
+
+    U_r = 4.0*epsilon*(-(sigma/r)**6.0+(sigma/r)**12.0)
+
+ END FUNCTION U_r
+
+END MODULE mdrutinas
