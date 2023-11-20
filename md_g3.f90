@@ -8,11 +8,12 @@ program md_g3
 
     implicit none
     integer :: i,N
-    real(kind=8):: L,sigma,epsilon,u
+    real(kind=8):: L,sigma,epsilon,u,f(3),rc2
     real(kind=8), allocatable ::r(:,:)
 
     sigma= 1
     epsilon = 1
+    rc2 = 100
 
     ! Recibir parametros N, L
     N = 9
@@ -32,8 +33,11 @@ program md_g3
     !     print*, r(i,:)
     ! end do
 
-    call V_interaccion(u,N,r,sigma,epsilon)
-    print *, u
+    ! call V_interaccion(u,N,r,sigma,epsilon)
+    ! print *, u
+
+    f = fuerza(r(1,:), r(2,:), sigma, epsilon, rc2)
+    print *, f
 
     ! Ciclos de MD
 

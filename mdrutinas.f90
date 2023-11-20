@@ -57,7 +57,6 @@ MODULE mdrutinas
     INTEGER, intent(in):: N
     REAL(kind=8), intent(out):: u
     INTEGER :: i, j
-    REAL(kind=8):: a
 
     !Inicializo potencial
     u = 0
@@ -83,5 +82,27 @@ MODULE mdrutinas
     U_r = 4.0*epsilon*(-(sigma/r)**6.0+(sigma/r)**12.0)
 
  END FUNCTION U_r
+
+ FUNCTION fuerza(p1, p2, sigma, epsilon, rc2)
+    REAL(kind=8), intent(in):: p1(3), p2(3), sigma, epsilon, rc2
+    REAL(kind=8) :: fuerza(3), r(3) ,r2, r2i, r6i
+
+    ! vector posicion relativa
+    r = p1-p2
+    print *, r
+    !distancia al cuadrado
+    r2 = r(1)**2+r(2)**2+r(3)**2
+    print* ,r2
+    !verifico si cumple radio de corte
+    if ( r2 < rc2 ) then
+
+        !calculo fuerza
+        r2i = (sigma**2)/r2
+        r6i = r2i**3
+        fuerza = 48*r2i*r6i*epsilon*(r6i-0.5)*r
+
+    end if
+
+ END FUNCTION fuerza
 
 END MODULE mdrutinas
