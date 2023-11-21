@@ -8,8 +8,8 @@ program md_g3
 
    implicit none
    logical :: es
-   integer :: seed,i,N
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2
+   integer :: seed,i,j,N,nmd
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m
    real(kind=8), allocatable ::r(:,:),f(:,:)
 
    !************************************************
@@ -32,6 +32,9 @@ program md_g3
    sigma= 1
    epsilon = 1
    rc2 = (2.5*sigma)**2
+   m = 1
+   dt = 0.1
+   nmd=100
 
    ! Recibir parametros N, L
    N = 2
@@ -46,10 +49,10 @@ program md_g3
 
    ! Inicializar vectores
 !    call Init_pos(N,L,r)
-   call Init_pos_rand(N,L,r)
+   ! call Init_pos_rand(N,L,r)
 
-   ! r(1,:)= [1,0,0]
-   ! r(2,:)= [5.0,0.0,0.0]
+   r(1,:)= [4,0,0]
+   r(2,:)= [5.0,0.0,0.0]
 
    ! do i = 1, N
    !    print*, r(i,:)
@@ -61,6 +64,24 @@ program md_g3
    !    print*, f(i,:)
    ! end do
 
+   !Loop de MD
+   do j = 1, nmd
+      print *, 'paso:',j
+      !calculo posiciones nuevas
+      do i = 1, N
+         r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
+      end do
+      ! do i = 1, N
+      !    print*, r(i,:)
+      ! end do
+
+      !calculo fuerza y potencial nuevos
+      call calculos(u,f, N,r, sigma,epsilon, L,rc2)
+      print *, u
+      ! do i = 1, N
+      !    print*, f(i,:)
+      ! end do
+   end do
 
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]
