@@ -46,33 +46,20 @@ program md_g3
 
    ! Inicializar vectores
 !    call Init_pos(N,L,r)
-!    call Init_pos_rand(N,L,r)
+   call Init_pos_rand(N,L,r)
 
-   r(1,:)= [1,0,0]
-   r(2,:)= [5.0,0.0,0.0]
+   ! r(1,:)= [1,0,0]
+   ! r(2,:)= [5.0,0.0,0.0]
 
-   ! call Init_vel(N,L,v)
-   ! call calc_force(N,L,r,v,f)
-
-   do i = 1, N
-      print*, r(i,:)
-   end do
+   ! do i = 1, N
+   !    print*, r(i,:)
+   ! end do
 
    call calculos(u,f, N,r, sigma,epsilon, L,rc2)
-   print *, u
-
-   do i = 1, N
-      print*, f(i,:)
-   end do
-
-!    call V_interaccion(u,N,r,sigma,epsilon)
-!    print *, u
-
-!    f = fuerza(r(1,:), r(2,:), sigma, epsilon, rc2, L)
-!    print *, f
-
-   ! Ciclos de MD
-
+   ! print *, u
+   ! do i = 1, N
+   !    print*, f(i,:)
+   ! end do
 
 
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

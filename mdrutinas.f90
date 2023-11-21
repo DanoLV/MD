@@ -57,7 +57,7 @@ CONTAINS
       REAL(kind=8), intent(in):: sigma,epsilon,r(N,3),L,rc2
       INTEGER, intent(in):: N
       REAL(kind=8), intent(out):: u, f(N,3)
-      real(kind=8) :: rrel(3), r2,faux
+      real(kind=8) :: rrel(3), r2,faux, raux(3)
       INTEGER :: i, j
 
       !Inicializo variables
@@ -68,24 +68,25 @@ CONTAINS
       do i = 1, N-1
          do j = i + 1, N
 
-            !Vector posicion relativa
+            !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
+            rrel = rrel - L * NINT(rrel / L)
 
             !distancia al cuadrado
             r2 = rrel(1)**2+rrel(2)**2+rrel(3)**2
 
-            ! calculo de potenciales
-            u = u + U_r(r2**(0.5),sigma,epsilon)
+            !Radio de corte
+            if ( r2 < rc2 ) then
 
-            !calculo de fuerzas
-            faux = fuerza(r2, sigma, epsilon, rc2, L)
-            f(i,:) = faux*rrel+f(i,:)
-            f(j,:) = -faux*rrel+f(j,:)
-            ! !Condicion periodica de contorno
-            ! if ( r2 > L**2 ) then
-            !    raux = L*r
-            !    r = r - L*raux
-            ! end if
+               ! calculo de potenciales
+               u = u + U_r(r2**(0.5),sigma,epsilon)-U_r(rc2**(0.5),sigma,epsilon)
+
+               !calculo de fuerzas
+               faux = fuerza(r2, sigma, epsilon, rc2, L)
+               f(i,:) = faux*rrel+f(i,:)
+               f(j,:) = -faux*rrel+f(j,:)
+
+            end if
          end do
       end do
 
@@ -151,8 +152,9 @@ CONTAINS
          !calculo fuerza
          r2i = (sigma**2)/r2
          r6i = r2i**3
-         fuerza = 48*r2i*r6i*epsilon*(r6i-0.5)!*r
-
+         fuerza = 48*r2i*r6i*epsilon*(r6i-0.5)
+      else
+         fuerza = 0
       end if
 
    END FUNCTION fuerza
