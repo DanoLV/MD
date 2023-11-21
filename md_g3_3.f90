@@ -33,8 +33,8 @@ program md_g3
    epsilon = 1
    rc2 = (2.5*sigma)**2
    m = 1
-   dt = 0.1
-   nmd=100
+   dt = 0.02
+   nmd=1000
 
    ! Recibir parametros N, L
    N = 2
@@ -51,8 +51,8 @@ program md_g3
 !    call Init_pos(N,L,r)
    ! call Init_pos_rand(N,L,r)
 
-   r(1,:)= [4,0,0]
-   r(2,:)= [5.0,0.0,0.0]
+   r(1,:)= [4.0,0.0,0.0]
+   r(2,:)= [4.8,0.0,0.0]
 
    ! do i = 1, N
    !    print*, r(i,:)
@@ -66,7 +66,8 @@ program md_g3
 
    !Loop de MD
    do j = 1, nmd
-      print *, 'paso:',j
+      print *, j, ' ',u
+      ! print *, 'paso:',j
       !calculo posiciones nuevas
       do i = 1, N
          r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
@@ -77,11 +78,11 @@ program md_g3
 
       !calculo fuerza y potencial nuevos
       call calculos(u,f, N,r, sigma,epsilon, L,rc2)
-      print *, u
       ! do i = 1, N
       !    print*, f(i,:)
       ! end do
    end do
+   print *, nmd+1, ' ',u
 
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]
