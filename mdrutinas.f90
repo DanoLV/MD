@@ -62,11 +62,11 @@ CONTAINS
    END SUBROUTINE Init_rand
 
 
-   SUBROUTINE calculos(u,f, N,r, sigma, epsilon, L,rc2)
-      REAL(kind=8), intent(in):: sigma,epsilon,r(N,3),L,rc2
+   SUBROUTINE calculos(u, f, v, r, N, sigma, epsilon, L,rc2)
+      REAL(kind=8), intent(in):: sigma,epsilon,r(N,3),v(N,3),L,rc2
       INTEGER, intent(in):: N
       REAL(kind=8), intent(out):: u, f(N,3)
-      real(kind=8) :: rrel(3), r2,faux, raux(3)
+      real(kind=8) :: rrel(3), r2,faux, raux(3), v2, ec
       INTEGER :: i, j
 
       !Inicializo variables
@@ -97,7 +97,19 @@ CONTAINS
 
             end if
          end do
+
+         ! Calculo de energia cinetica
+         v2 = v(i,1)**2+v(i,2)**2+v(i,3)**2
+         ec= ec + 0.5*v2
+
       end do
+
+      ! Calculo de energia cinetica
+      v2 = v(N,1)**2+v(N,2)**2+v(N,3)**2
+      ec= ec + 0.5*v2
+
+      !Energia total
+      u = (ec+u)/N
 
       return
 
@@ -181,4 +193,28 @@ CONTAINS
       ! CLOSE(4)
    END SUBROUTINE
 
+   SUBROUTINE pos_verlet(f, v, r, N, m, dt)
+      REAL(kind=8), intent(in):: f(N,3),v(N,3), m, dt
+      INTEGER, intent(in):: N
+      REAL(kind=8), intent(out):: r(N,3)
+      ! real(kind=8) :: rrel(3), r2,faux, raux(3)
+      INTEGER :: i
+
+      do i = 1, N
+         r(i,:) = r(i,:) + v(i,:)*dt+ 0.5/m* f(i,:)*dt**2
+      end do
+
+   END SUBROUTINE
+
+   SUBROUTINE pos_1(f, r, N, m, dt)
+      REAL(kind=8), intent(in):: f(N,3), m, dt
+      INTEGER, intent(in):: N
+      REAL(kind=8), intent(out):: r(N,3)
+      INTEGER :: i
+
+      do i = 1, N
+         r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
+      end do
+
+   END SUBROUTINE
 END MODULE mdrutinas

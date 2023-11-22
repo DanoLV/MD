@@ -1,7 +1,7 @@
 ! Guia 3: Dinamica Molecular
 
 program md_g3
-
+   use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
    use globals
    use ziggurat
    use mdrutinas
@@ -33,8 +33,8 @@ program md_g3
    epsilon = 1
    rc2 = (2.5*sigma)**2
    m = 1
-   dt = 0.5
-   nmd=1
+   dt = 0.001
+   nmd=100000
    kb=1
 
    ! Recibir parametros N, L
@@ -68,7 +68,7 @@ program md_g3
    ! end do
 
    !Fuerzas
-   call calculos(u,f, N,r, sigma,epsilon, L,rc2)
+   call calculos(u, f, v, r, N, sigma,epsilon, L,rc2)
    ! print *, u
    ! do i = 1, N
    !    print*, f(i,:)
@@ -80,25 +80,25 @@ program md_g3
 
    !Loop de MD
    do j = 1, nmd
-      ! print *, j, ' ',u
+      write(stdout,*) j, ' ',u
       ! print *, 'paso:',j
       !calculo posiciones nuevas
-      do i = 1, N
-         r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
-      end do
+      call pos_verlet(f, v, r, N, m, dt)
+      ! call pos_1(f, r, N, m, dt)
+
       call savePosInFile (r, N, out)
       ! do i = 1, N
       !    print*, r(i,:)
       ! end do
 
       !calculo fuerza y potencial nuevos
-      call calculos(u,f, N,r, sigma,epsilon, L,rc2)
+      call calculos(u, f, v, r, N,  sigma,epsilon, L,rc2)
       ! do i = 1, N
       !    print*, f(i,:)
       ! end do
 
    end do
-   ! print *, nmd+1, ' ',u
+   write(stdout,*) nmd+1, ' ',u
    close(out)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]
