@@ -8,7 +8,7 @@ program md_g3
 
    implicit none
    logical :: es
-   integer :: seed,i,j,N,nmd
+   integer :: seed,i,j,N,nmd, out
    real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m
    real(kind=8), allocatable ::r(:,:),f(:,:)
 
@@ -31,14 +31,14 @@ program md_g3
 
    sigma= 1
    epsilon = 1
-   rc2 = (2.5*sigma)**2
+   rc2 = (25*sigma)**2
    m = 1
-   dt = 0.02
-   nmd=1000
+   dt = 0.5
+   nmd=50000
 
    ! Recibir parametros N, L
-   N = 2
-   L = 9
+   N = 5
+   L = 10
 
    ! Inicializar variables
    allocate(r(N,3))
@@ -48,11 +48,11 @@ program md_g3
    f=0
 
    ! Inicializar vectores
-!    call Init_pos(N,L,r)
-   ! call Init_pos_rand(N,L,r)
+   ! call Init_pos(N,L,r)
+   call Init_pos_rand(N,L,r)
 
-   r(1,:)= [4.0,0.0,0.0]
-   r(2,:)= [4.8,0.0,0.0]
+   ! r(1,:)= [4.0,0.0,0.0]
+   ! r(2,:)= [4.8,0.0,0.0]
 
    ! do i = 1, N
    !    print*, r(i,:)
@@ -63,15 +63,18 @@ program md_g3
    ! do i = 1, N
    !    print*, f(i,:)
    ! end do
-
+   out=4
+   OPEN(unit=out,file='positions.xyz', status='replace', position='append')
+   call savePosInFile (r, N, out)
    !Loop de MD
    do j = 1, nmd
-      print *, j, ' ',u
+      ! print *, j, ' ',u
       ! print *, 'paso:',j
       !calculo posiciones nuevas
       do i = 1, N
          r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
       end do
+      call savePosInFile (r, N, out)
       ! do i = 1, N
       !    print*, r(i,:)
       ! end do
@@ -81,9 +84,10 @@ program md_g3
       ! do i = 1, N
       !    print*, f(i,:)
       ! end do
-   end do
-   print *, nmd+1, ' ',u
 
+   end do
+   ! print *, nmd+1, ' ',u
+   close(out)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]
 ! Escribir la última semilla para continuar con la cadena de numeros aleatorios

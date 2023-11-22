@@ -159,4 +159,17 @@ CONTAINS
 
    END FUNCTION fuerza
 
+   SUBROUTINE savePosInFile (r, N, out)
+      REAL (kind=8), INTENT(IN)  :: r(N,3)
+      INTEGER, INTENT(IN)  :: N, out
+      INTEGER  :: i
+      ! OPEN(unit=4,file='positions.dat', status='old', position='append')
+      write(out,*) N
+      write(out,*)
+      DO i = 1, N
+         write(out,*) 'O ', r(i, :)
+      END DO
+      ! CLOSE(4)
+   END SUBROUTINE
+
 END MODULE mdrutinas
