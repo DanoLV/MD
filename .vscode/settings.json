@@ -2,5 +2,5 @@
     "editor.formatOnSave": true,
     "cmake.configureOnOpen": false,
     "fortran.fortls.disabled": false,
-    "fortran.fortls.path": "/usr/local/bin/fortls", //"/home/dano/mambaforge3/bin/fortls", //"/home/dano/.local/bin/fortls",
+    "fortran.fortls.path": "/home/dano/mambaforge3/bin/fortls", //"/home/dano/mambaforge3/bin/fortls", //"/home/dano/.local/bin/fortls",
 }

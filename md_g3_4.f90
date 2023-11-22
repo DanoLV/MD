@@ -9,8 +9,8 @@ program md_g3
    implicit none
    logical :: es
    integer :: seed,i,j,N,nmd, out
-   real(kind=8):: L,sigma,epsilon,u,rc2,dt,m
-   real(kind=8), allocatable ::r(:,:),f(:,:)
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media
+   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:)
 
    !************************************************
 ![NO TOCAR] Inicializa generador de número random
@@ -31,14 +31,15 @@ program md_g3
 
    sigma= 1
    epsilon = 1
-   rc2 = (4*sigma)**2
+   rc2 = (2.5*sigma)**2
    m = 1
    dt = 0.5
-   nmd=100000
+   nmd=1
+   kb=1
 
    ! Recibir parametros N, L
-   N = 20
-   L = 20
+   N = 15
+   L= (N/(0.4*(sigma**(-3.0))))**(1.0/3.0)
 
    ! Inicializar variables
    allocate(r(N,3))
@@ -47,11 +48,31 @@ program md_g3
    allocate(f(N,3))
    f=0
 
-   ! Inicializar vectores
-   ! call Init_pos(N,L,r)
-   call Init_rand(N,L,r)
+   allocate(v(N,3))
+   v=0
 
+   ! Inicializar vectores
+   !Posiciones
+   call Init_pos(N,L,r)
+   ! r(1,:)= [4.0,0.0,0.0]
+   ! r(2,:)= [4.8,0.0,0.0]
+   ! do i = 1, N
+   !    print*, r(i,:)
+   ! end do
+
+   !Velocidades
+   media=1.5*epsilon/kb
+   call Init_rand(N,real(1.0,8),v,'nor',media)
+   ! do i = 1, N
+   !    print*, v(i,:)
+   ! end do
+
+   !Fuerzas
    call calculos(u,f, N,r, sigma,epsilon, L,rc2)
+   ! print *, u
+   ! do i = 1, N
+   !    print*, f(i,:)
+   ! end do
 
    out=4
    OPEN(unit=out,file='positions.xyz', status='replace', position='append')
@@ -59,18 +80,25 @@ program md_g3
 
    !Loop de MD
    do j = 1, nmd
-
+      ! print *, j, ' ',u
+      ! print *, 'paso:',j
       !calculo posiciones nuevas
       do i = 1, N
          r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
       end do
       call savePosInFile (r, N, out)
+      ! do i = 1, N
+      !    print*, r(i,:)
+      ! end do
 
       !calculo fuerza y potencial nuevos
       call calculos(u,f, N,r, sigma,epsilon, L,rc2)
+      ! do i = 1, N
+      !    print*, f(i,:)
+      ! end do
 
    end do
-
+   ! print *, nmd+1, ' ',u
    close(out)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]

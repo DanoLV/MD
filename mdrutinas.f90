@@ -39,18 +39,27 @@ CONTAINS
 
    END SUBROUTINE Init_pos
 
-   SUBROUTINE Init_pos_rand(N,L,r)
+   SUBROUTINE Init_rand(N,L,r,tipo, media)
 
       integer, intent(in)  :: N
-      real (kind=8), intent(in) :: L
+      real (kind=8), intent(in) :: L, media
       real (kind=8), allocatable :: r(:,:)
+      character(Len=3) :: tipo
       integer :: p
 
-      do p = 1, N
-         r(p,:) = L* [uni(), uni(), uni()]
-      end do
+      SELECT CASE (tipo)
+       CASE ("uni")
+         do p = 1, N
+            r(p,:) = L* [uni(), uni(), uni()]
+         end do
+       CASE ("nor")
+         do p = 1, N
+            r(p,:) = L* [rnor(),rnor(),rnor()]+[1,1,1]*media
+         end do
+       CASE DEFAULT
 
-   END SUBROUTINE Init_pos_rand
+      END SELECT
+   END SUBROUTINE Init_rand
 
 
    SUBROUTINE calculos(u,f, N,r, sigma, epsilon, L,rc2)
@@ -167,7 +176,7 @@ CONTAINS
       write(out,*) N
       write(out,*)
       DO i = 1, N
-         write(out,*) 'O ', r(i, :)
+         write(out,*) 'S ', r(i, :)
       END DO
       ! CLOSE(4)
    END SUBROUTINE
