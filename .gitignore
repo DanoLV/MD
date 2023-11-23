@@ -1,4 +1,2 @@
-positions.xyz
-energia.dat
-positions.xyz
-seed.dat
+*.xyz
+*.dat
