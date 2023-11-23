@@ -8,8 +8,8 @@ program md_g3
 
    implicit none
    logical :: es
-   integer :: seed,i,j,N,nmd, out
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media
+   integer :: seed,i,j,N,nmd, out, nstepscalc, nprevio
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec
    real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:)
 
    !************************************************
@@ -34,12 +34,15 @@ program md_g3
    rc2 = (2.5*sigma)**2
    m = 1
    dt = 0.001
-   nmd=100000
+   nmd=50000
    kb=1
+   densidad = 0.4
+   nstepscalc = 100
+   nprevio = 10000
 
    ! Recibir parametros N, L
-   N = 15
-   L= (N/(0.4*(sigma**(-3.0))))**(1.0/3.0)
+   L = 10
+   N = NINT(densidad * L**3)
 
    ! Inicializar variables
    allocate(r(N,3))
@@ -54,51 +57,49 @@ program md_g3
    ! Inicializar vectores
    !Posiciones
    call Init_pos(N,L,r)
-   ! r(1,:)= [4.0,0.0,0.0]
-   ! r(2,:)= [4.8,0.0,0.0]
-   ! do i = 1, N
-   !    print*, r(i,:)
-   ! end do
 
    !Velocidades
-   media=1.5*epsilon/kb
+   media=0!1.5*epsilon/kb
    call Init_rand(N,real(1.0,8),v,'nor',media)
-   ! do i = 1, N
-   !    print*, v(i,:)
-   ! end do
 
    !Fuerzas
-   call calculos(u, f, v, r, N, sigma,epsilon, L,rc2)
-   ! print *, u
-   ! do i = 1, N
-   !    print*, f(i,:)
-   ! end do
+   call calculosred(u, ec, f, v, r, N, sigma,epsilon, L,rc2, m, dt)
+
+   !Loop de estabilizacion
+   do j = 1, nprevio
+
+
+      !calculo posiciones nuevas
+      call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
+
+      !calculo fuerza, velocidad y potencial nuevos
+      call calculosred(u, ec, f, v, r, N,  sigma,epsilon, L,rc2, m, dt) !f(t+dt)
+
+   end do
 
    out=4
    OPEN(unit=out,file='positions.xyz', status='replace', position='append')
    call savePosInFile (r, N, out)
+   write(stdout,*) j*dt, ' ',u, ' ',ec
 
    !Loop de MD
    do j = 1, nmd
-      write(stdout,*) j, ' ',u
-      ! print *, 'paso:',j
+
+
       !calculo posiciones nuevas
-      call pos_verlet(f, v, r, N, m, dt)
-      ! call pos_1(f, r, N, m, dt)
+      call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
-      call savePosInFile (r, N, out)
-      ! do i = 1, N
-      !    print*, r(i,:)
-      ! end do
+      !calculo fuerza, velocidad y potencial nuevos
+      call calculos(u, ec, f, v, r, N,  sigma,epsilon, L,rc2, m, dt) !f(t+dt)
 
-      !calculo fuerza y potencial nuevos
-      call calculos(u, f, v, r, N,  sigma,epsilon, L,rc2)
-      ! do i = 1, N
-      !    print*, f(i,:)
-      ! end do
+      ! Saco datos
+      if ( MOD(i,nstepscalc)== 0 ) then
+         write(stdout,*) j*dt, ' ',u, ' ',ec
+         call savePosInFile (r, N, out)
+      end if
 
    end do
-   write(stdout,*) nmd+1, ' ',u
+   write(stdout,*) (nmd+1)*dt, ' ',u, ' ',ec
    close(out)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ![No TOCAR]
