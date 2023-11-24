@@ -62,12 +62,31 @@ CONTAINS
       END SELECT
    END SUBROUTINE Init_rand
 
+   real(kind=8) FUNCTION calc_ecinetica (v, N, m)
+      real(kind=8) :: v2, v(3), m
+      INTEGER :: i, N
 
-   SUBROUTINE calculos(u, ec, f, v, r, N, sigma, epsilon, L, rc2, m, dt)
-      REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L,rc2, dt, m
+      calc_ecinetica = 0
+
+      !Calculo todas las interacciones de pares
+      do i = 1, N
+
+         ! Calculo de energia cinetica
+         v2 = v(1)**2+v(2)**2+v(3)**2
+         calc_ecinetica = calc_ecinetica + 0.5*m*v2
+
+      end do
+
+      ! !Por particula
+      ! calc_ecinetica = calc_ecinetica/N
+
+   END FUNCTION
+
+   SUBROUTINE calculos(u, f, r, N, sigma, epsilon, L, rc2)
+      REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L,rc2
       INTEGER, intent(in):: N
-      REAL(kind=8), intent(out):: u, f(N,3), v(N,3), ec
-      real(kind=8) :: rrel(3), r2,faux, raux(3), v2, vaux(3), ucut
+      REAL(kind=8), intent(out):: u, f(N,3)
+      real(kind=8) :: rrel(3), r2,faux, raux(3), ucut
       INTEGER :: i, j
 
       !Inicializo variables
@@ -77,9 +96,6 @@ CONTAINS
 
       !Calculo todas las interacciones de pares
       do i = 1, N-1
-
-         !v(t+1/2*dt)
-         vaux = v(i,:)+0.5*dt/m*f(i,:)
 
          do j = i + 1, N
 
@@ -104,46 +120,38 @@ CONTAINS
             end if
          end do
 
-         !Actualizo velocidad
-         v(i,:) = vaux + 0.5/m*dt*f(i,:)
-
-         ! Calculo de energia cinetica
-         v2 = v(i,1)**2+v(i,2)**2+v(i,3)**2
-         ec= ec + 0.5*v2
-
       end do
 
-      !Actualizo velocidad de particula N
-      v(N,:) = vaux + 0.5/m*dt*f(N,:)
-
-      ! Calculo de energia cinetica de particula N
-      v2 = v(N,1)**2+v(N,2)**2+v(N,3)**2
-      ec= ec + 0.5*v2
-      ec = ec/N
-      !Energia potencial
-      u = u/N
+      ! !Energia potencial por particula
+      ! u = u/N
 
       return
 
    END SUBROUTINE calculos
 
-   SUBROUTINE calculosred(u, ec, f, v, r, N, sigma, epsilon, L, rc2, m, dt)
-      REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L,rc2, dt, m
+   FUNCTION velocidadintermedia(f, v, m, N, dt)
+      REAL(kind=8):: f(N,3), v(N,3), m, dt
+      REAL(kind=8):: velocidadintermedia(N,3)
+      INTEGER :: N, i
+
+      do i = 1, N
+         velocidadintermedia(i,:) = v(i,:)+0.5*dt/m*f(i,:)
+      end do
+
+   END FUNCTION velocidadintermedia
+
+   SUBROUTINE fuerzas(f, r, N, sigma, epsilon, L, rc2)
+      REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L, rc2
       INTEGER, intent(in):: N
-      REAL(kind=8), intent(out):: u, f(N,3), v(N,3), ec
-      real(kind=8) :: rrel(3), r2,faux, raux(3), v2, vaux(3), ucut
+      REAL(kind=8), intent(out):: f(N,3)
+      real(kind=8) :: rrel(3), r2,faux
       INTEGER :: i, j
 
       !Inicializo variables
-      u = 0.0
       f = 0.0
-      ucut = U_r(rc2**(0.5),sigma,epsilon)
 
       !Calculo todas las interacciones de pares
       do i = 1, N-1
-
-         ! !v(t+1/2*dt)
-         ! vaux = v(i,:)+0.5*dt/m*f(i,:)
 
          do j = i + 1, N
 
@@ -157,9 +165,6 @@ CONTAINS
             !Radio de corte
             if ( r2 < rc2 ) then
 
-               ! ! calculo de potenciales
-               ! u = u + U_r(r2**(0.5),sigma,epsilon)- ucut
-
                !calculo de fuerzas
                faux = fuerza(r2, sigma, epsilon, rc2, L)
                f(i,:) = faux*rrel+f(i,:) ! f(t+dt)
@@ -168,48 +173,29 @@ CONTAINS
             end if
          end do
 
-         ! !Actualizo velocidad
-         ! v(i,:) = vaux + 0.5/m*dt*f(i,:)
-
-         ! ! Calculo de energia cinetica
-         ! v2 = v(i,1)**2+v(i,2)**2+v(i,3)**2
-         ! ec= ec + 0.5*v2
-
       end do
-
-      ! !Actualizo velocidad de particula N
-      ! v(N,:) = vaux + 0.5/m*dt*f(N,:)
-
-      ! ! Calculo de energia cinetica de particula N
-      ! v2 = v(N,1)**2+v(N,2)**2+v(N,3)**2
-      ! ec= ec + 0.5*v2
-      ! ec = ec/N
-      ! !Energia potencial
-      ! u = u/N
 
       return
 
-   END SUBROUTINE calculosred
+   END SUBROUTINE fuerzas
 
-!    SUBROUTINE V_interaccion(u,N,r,sigma,epsilon)
-!       REAL(kind=8), intent(in):: sigma,epsilon,r(N,3)
-!       INTEGER, intent(in):: N
-!       REAL(kind=8), intent(out):: u
-!       INTEGER :: i, j
+   SUBROUTINE V_interaccion(u,N,r,sigma,epsilon)
+      REAL(kind=8), intent(in):: sigma,epsilon,r(N,3)
+      INTEGER, intent(in):: N
+      REAL(kind=8), intent(out):: u
+      INTEGER :: i, j
 
-!       !Inicializo potencial
-!       u = 0
+      !Inicializo potencial
+      u = 0
 
-!       !Calculo todas las interacciones de pares
-!       do i = 1, N-1
-!          do j = i + 1, N
-!             u = u + U_r1(r(i,:),r(j,:),sigma,epsilon)
-!          end do
-!       end do
+      !Calculo todas las interacciones de pares
+      do i = 1, N-1
+         do j = i + 1, N
+            u = u + U_r1(r(i,:),r(j,:),sigma,epsilon)
+         end do
+      end do
 
-!       return
-
-!    END SUBROUTINE V_interaccion
+   END SUBROUTINE V_interaccion
 
    REAL(kind=8) FUNCTION U_r(r,sigma,epsilon)
       REAL(kind=8), intent(in):: r,sigma,epsilon
@@ -221,16 +207,16 @@ CONTAINS
 
    END FUNCTION
 
-!    REAL(kind=8) FUNCTION U_r1(p1,p2,sigma,epsilon)
-!       REAL(kind=8), intent(in):: p1(3),p2(3),sigma,epsilon
-!       REAL(kind=8) :: r
+   REAL(kind=8) FUNCTION U_r1(p1,p2,sigma,epsilon)
+      REAL(kind=8), intent(in):: p1(3),p2(3),sigma,epsilon
+      REAL(kind=8) :: r
 
-!       !Calculo distancia entre particulas
-!       r = sqrt((p1(1)-p2(1))**2+(p1(2)-p2(2))**2+(p1(3)-p2(3))**2)
+      !Calculo distancia entre particulas
+      r = sqrt((p1(1)-p2(1))**2+(p1(2)-p2(2))**2+(p1(3)-p2(3))**2)
 
-!       U_r1 = 4.0*epsilon*(-(sigma/r)**6.0+(sigma/r)**12.0)
+      U_r1 = 4.0*epsilon*(-(sigma/r)**6.0+(sigma/r)**12.0)
 
-!    END FUNCTION U_r1
+   END FUNCTION U_r1
 
    REAL(kind=8) FUNCTION fuerza(r2, sigma, epsilon, rc2, L)
       REAL(kind=8), intent(in):: sigma, epsilon, rc2, L,r2
@@ -264,7 +250,7 @@ CONTAINS
       INTEGER :: i, j
 
       do i = 1, N
-         r(i,:) = r(i,:) + v(i,:)*dt+ 0.5/m* f(i,:)*dt**2
+         r(i,:) = r(i,:) + v(i,:)*dt+ (0.5/m)* f(i,:)*dt**2
 
          !Condicion periodica de contorno
          do j = 1, 3
