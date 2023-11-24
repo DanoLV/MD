@@ -34,11 +34,11 @@ program md_g3
    rc2 = (2.5*sigma)**2
    m = 1
    dt = 0.001
-   nmd=50000
+   nmd=1000000
    kb=1
    densidad = 0.4
    nstepscalc = 100
-   nprevio = 10000
+   nprevio = 20000
 
    ! Recibir parametros N, L
    L = 10
@@ -68,7 +68,6 @@ program md_g3
    !Loop de estabilizacion
    do j = 1, nprevio
 
-
       !calculo posiciones nuevas
       call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
@@ -94,7 +93,7 @@ program md_g3
 
       ! Saco datos
       if ( MOD(i,nstepscalc)== 0 ) then
-         write(stdout,*) j*dt, ' ',u, ' ',ec
+         write(stdout,*) j*(dt+nprevio), ' ',u, ' ',ec
          call savePosInFile (r, N, out)
       end if
 
