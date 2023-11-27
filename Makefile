@@ -3,8 +3,8 @@ exe = md_g3_4
 fcomp = gfortran #ifort # /opt/intel/compiler70/ia32/bin/ifc  
 # Warning: the debugger doesn't get along with the optimization options
 # So: not use -O3 WITH -g option
-flags =  -O3  
-# Remote compilation
+flags =  -O3 -fopenmp
+# Remote compilation -fopenmp
 OBJS = ziggurat.o globals.o mdrutinas.o md_g3_4.o
 
 .SUFFIXES:            # this deletes the default suffixes 

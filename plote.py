@@ -32,7 +32,7 @@ a=0
 b=0
 axis.plot(y[:,0],y[:,1],'b')
 axis.plot(y[:,0],y[:,2],'r')
-axis.plot(y[:,0],y[:,3],'g')
+# axis.plot(y[:,0],y[:,3],'g')
 # axis.set_xlim([9900000000,10000000000])
 # axis.set_ylim([-0.5,3])
 # axis.set_ylabel('$<Epotencial>_{sitio}$')

@@ -3,6 +3,7 @@ MODULE mdrutinas
    use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
    use ziggurat
    use globals
+   USE OMP_LIB
    IMPLICIT NONE
 
 CONTAINS
@@ -50,32 +51,38 @@ CONTAINS
 
       SELECT CASE (tipo)
        CASE ("uni")
+
          do p = 1, N
             r(p,:) = L* [uni(), uni(), uni()]
          end do
+
        CASE ("nor")
+
          do p = 1, N
             r(p,:) = L* [rnor(),rnor(),rnor()]+[1,1,1]*media
          end do
+
        CASE DEFAULT
 
       END SELECT
    END SUBROUTINE Init_rand
 
    real(kind=8) FUNCTION calc_ecinetica (v, N, m)
-      real(kind=8) :: v2, v(3), m
+      real(kind=8) :: eci, v(3), m
       INTEGER :: i, N
 
       calc_ecinetica = 0
 
-      !Calculo todas las interacciones de pares
+      !$OMP parallel do private (eci) &
+      !$omp& reduction(+:calc_ecinetica)
       do i = 1, N
 
          ! Calculo de energia cinetica
-         v2 = v(1)**2+v(2)**2+v(3)**2
-         calc_ecinetica = calc_ecinetica + 0.5*m*v2
+         eci =  0.5*m*(v(1)**2+v(2)**2+v(3)**2)
+         calc_ecinetica = calc_ecinetica + eci
 
       end do
+      !$OMP end parallel do
 
       ! !Por particula
       ! calc_ecinetica = calc_ecinetica/N
@@ -134,9 +141,11 @@ CONTAINS
       REAL(kind=8):: velocidadintermedia(N,3)
       INTEGER :: N, i
 
+      !$OMP parallel do
       do i = 1, N
          velocidadintermedia(i,:) = v(i,:)+0.5*dt/m*f(i,:)
       end do
+      !$OMP end parallel do
 
    END FUNCTION velocidadintermedia
 
@@ -149,6 +158,7 @@ CONTAINS
 
       !Inicializo variables
       f = 0.0
+
 
       !Calculo todas las interacciones de pares
       do i = 1, N-1
@@ -218,7 +228,7 @@ CONTAINS
 
    END FUNCTION U_r1
 
-   REAL(kind=8) FUNCTION fuerza(r2, sigma, epsilon, rc2, L)
+   REAL(kind=8) FUNCTION fuerza(r2, sigma, epsilon, rc2, L), ' ',u, ' ',ec, ' ',u+ec
       REAL(kind=8), intent(in):: sigma, epsilon, rc2, L,r2
       REAL(kind=8) :: r2i, r6i!,fuerza(3) , raux(3) ,r2
 
@@ -249,16 +259,19 @@ CONTAINS
       ! real(kind=8) :: rrel(3), r2,faux, raux(3)
       INTEGER :: i, j
 
+      !$OMP parallel do
       do i = 1, N
          r(i,:) = r(i,:) + v(i,:)*dt+ (0.5/m)* f(i,:)*dt**2
 
          !Condicion periodica de contorno
+         !$OMP parallel do
          do j = 1, 3
             if(r(i,j).gt.L) r(i,j) = r(i,j) - L
             if(r(i,j).lt.0.0) r(i,j) = r(i,j) + L
          end do
-
+         !$OMP end parallel do
       end do
+      !$OMP end parallel do
 
    END SUBROUTINE
 
@@ -273,4 +286,5 @@ CONTAINS
       end do
 
    END SUBROUTINE
+
 END MODULE mdrutinas
