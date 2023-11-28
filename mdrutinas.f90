@@ -67,25 +67,19 @@ CONTAINS
       END SELECT
    END SUBROUTINE Init_rand
 
+   ! Calculo de energia cinetica
    real(kind=8) FUNCTION calc_ecinetica (v, N, m)
-      real(kind=8) :: eci, v(3), m
+      real(kind=8) :: v(N,3), m
       INTEGER :: i, N
 
       calc_ecinetica = 0
-
-      !$OMP parallel do private (eci) &
-      !$omp& reduction(+:calc_ecinetica)
+      !$omp parallel do reduction(+:calc_ecinetica)
       do i = 1, N
-
-         ! Calculo de energia cinetica
-         eci =  0.5*m*(v(1)**2+v(2)**2+v(3)**2)
-         calc_ecinetica = calc_ecinetica + eci
-
+         calc_ecinetica =  v(i,1)**2+v(i,2)**2+v(i,3)**2 + calc_ecinetica
       end do
-      !$OMP end parallel do
+      !$omp end parallel do
 
-      ! !Por particula
-      ! calc_ecinetica = calc_ecinetica/N
+      calc_ecinetica = 0.5*m*calc_ecinetica
 
    END FUNCTION
 
@@ -108,7 +102,7 @@ CONTAINS
 
             !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
-            rrel = rrel - L * NINT(rrel / L)
+            rrel = rrel - L * INT(2*rrel / L)
 
             !distancia al cuadrado
             r2 = rrel(1)**2+rrel(2)**2+rrel(3)**2
@@ -129,25 +123,23 @@ CONTAINS
 
       end do
 
-      ! !Energia potencial por particula
-      ! u = u/N
-
       return
 
    END SUBROUTINE calculos
 
-   FUNCTION velocidadintermedia(f, v, m, N, dt)
-      REAL(kind=8):: f(N,3), v(N,3), m, dt
-      REAL(kind=8):: velocidadintermedia(N,3)
+   SUBROUTINE velocidadverlet(f, v, m, N, dt)!, ec)
+      REAL(kind=8), intent(in):: f(N,3), m, dt
+      REAL(kind=8), intent(inout):: v(N,3)
+      ! REAL(kind=8), intent(out):: ec
       INTEGER :: N, i
 
       !$OMP parallel do
       do i = 1, N
-         velocidadintermedia(i,:) = v(i,:)+0.5*dt/m*f(i,:)
+         v(i,:) = v(i,:)+0.5*dt/m*f(i,:)
       end do
       !$OMP end parallel do
 
-   END FUNCTION velocidadintermedia
+   END SUBROUTINE velocidadverlet
 
    SUBROUTINE fuerzas(f, r, N, sigma, epsilon, L, rc2)
       REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L, rc2
@@ -159,7 +151,6 @@ CONTAINS
       !Inicializo variables
       f = 0.0
 
-
       !Calculo todas las interacciones de pares
       do i = 1, N-1
 
@@ -167,7 +158,7 @@ CONTAINS
 
             !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
-            rrel = rrel - L * NINT(rrel / L)
+            rrel = rrel - L * INT(2*rrel / L)
 
             !distancia al cuadrado
             r2 = rrel(1)**2+rrel(2)**2+rrel(3)**2
@@ -228,7 +219,7 @@ CONTAINS
 
    END FUNCTION U_r1
 
-   REAL(kind=8) FUNCTION fuerza(r2, sigma, epsilon, rc2, L), ' ',u, ' ',ec, ' ',u+ec
+   REAL(kind=8) FUNCTION fuerza(r2, sigma, epsilon, rc2, L)
       REAL(kind=8), intent(in):: sigma, epsilon, rc2, L,r2
       REAL(kind=8) :: r2i, r6i!,fuerza(3) , raux(3) ,r2
 
@@ -253,38 +244,47 @@ CONTAINS
    END SUBROUTINE
 
    SUBROUTINE pos_verlet(f, v, r, N, m, dt, L)
-      REAL(kind=8), intent(in):: f(N,3),v(N,3), m, dt, L
+      REAL(kind=8), intent(in):: f(N,3), m, dt, L
       INTEGER, intent(in):: N
-      REAL(kind=8), intent(out):: r(N,3)
+      REAL(kind=8), intent(out):: r(N,3),v(N,3)
       ! real(kind=8) :: rrel(3), r2,faux, raux(3)
       INTEGER :: i, j
 
-      !$OMP parallel do
+      ! $OMP parallel do
       do i = 1, N
-         r(i,:) = r(i,:) + v(i,:)*dt+ (0.5/m)* f(i,:)*dt**2
+         r(i,:) = r(i,:) + v(i,:)*dt + (0.5/m)* f(i,:)*dt**2
+
+         !v(t+ 1/2 dt)
+         v(i,:) = v(i,:)+0.5*dt/m*f(i,:)
 
          !Condicion periodica de contorno
-         !$OMP parallel do
+         ! $OMP parallel do
          do j = 1, 3
             if(r(i,j).gt.L) r(i,j) = r(i,j) - L
             if(r(i,j).lt.0.0) r(i,j) = r(i,j) + L
          end do
-         !$OMP end parallel do
+         ! $OMP end parallel do
       end do
-      !$OMP end parallel do
+      ! $OMP end parallel do
 
    END SUBROUTINE
 
-   SUBROUTINE pos_1(f, r, N, m, dt)
-      REAL(kind=8), intent(in):: f(N,3), m, dt
+   SUBROUTINE pos_1(f, r, N, m, dt, L)
+      REAL(kind=8), intent(in):: f(N,3), m, dt, L
       INTEGER, intent(in):: N
       REAL(kind=8), intent(out):: r(N,3)
-      INTEGER :: i
+      INTEGER :: i, j
 
+      ! $OMP parallel do
       do i = 1, N
          r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
+         !Condicion periodica de contorno
+         do j = 1, 3
+            if(r(i,j).gt.L) r(i,j) = r(i,j) - L
+            if(r(i,j).lt.0.0) r(i,j) = r(i,j) + L
+         end do
       end do
-
+      ! $OMP end parallel do
    END SUBROUTINE
 
 END MODULE mdrutinas

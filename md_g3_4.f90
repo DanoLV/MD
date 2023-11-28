@@ -33,8 +33,8 @@ program md_g3
    call zigset(seed)
 ![FIN NO TOCAR]
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   nproc = OMP_get_max_threads()
-   write(stdout,*) 'procesadores: ',nproc
+   ! nproc = OMP_get_max_threads()
+   ! write(stdout,*) 'procesadores: ',nproc
    call omp_set_dynamic(.true.)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    filee = "energia.dat"
@@ -43,20 +43,20 @@ program md_g3
    epsilon = 1
    rc2 = (2.5*sigma)**2
    m = 1
-   dte= 0.005
-   dtm = 0.00005
-   nmd=500000
+   dte= 0.05
+   dtm = 0.0005
+   nmd=200000
    kb=1
-   densidad = 0.4
-   nstepscalc = 10000
+   densidad = 0.3
+   nstepscalc = 500
    nprevio = 10000
-   nequilibracion = 100000
+   nequilibracion = 50000
 
    ! Recibir parametros N, L
    L = 6
-   N = NINT(densidad * L**3)
+   N = INT(densidad * L**3)
 
-   ! NINTInicializar variables
+   ! Inicializar variables
    allocate(r(N,3))
    r=0
 
@@ -68,50 +68,6 @@ program md_g3
    allocate(vaux(N,3))
    vaux=0
 
-   ! Inicializar vectores
-   !Posiciones
-   call Init_pos(N,L,r)
-
-   !Velocidades
-   media=0!1.5*epsilon/kb
-   call Init_rand(N,real(1.0,8),v,'nor',media)
-
-   !Fuerzas
-   call fuerzas(f, r, N, sigma, epsilon, L, rc2)
-
-   dt = dte
-   !Loop de estabilizacion
-   do j = 1, nprevio
-
-      !calculo posiciones nuevas
-      call pos_1(f, r, N, m, dt)! r(t+dt)
-
-      !calculo fuerza nueva
-      call fuerzas(f, r, N, sigma, epsilon, L, rc2)
-
-   end do
-
-   ! dt = dtm
-
-   !Loop de equilibracion
-   do j = 1, nequilibracion
-
-
-      !calculo posiciones nuevas
-      call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
-
-      !v(t+ 1/2 dt)
-      ! vaux = velocidadintermedia(f,v,m,N,dt)
-      v = velocidadintermedia(f,v,m,N,dt)
-
-      !calculo fuerza nueva
-      call fuerzas(f, r, N, sigma, epsilon, L, rc2)
-
-      !v(t+dt)
-      ! v = velocidadintermedia(f,vaux,m,N,dt)
-      v = velocidadintermedia(f,v,m,N,dt)
-
-   end do
 
    !abro archivo para la energia
    oute=15
@@ -122,24 +78,61 @@ program md_g3
    OPEN(unit=outp,file=filep, status='replace', position='append')
    call savePosInFile (r, N, outp)
 
-   dt = dtm
-   !Loop de MD
-   do i = 1, nmd
+   ! Inicializar vectores
+   !Posiciones
+   call Init_pos(N,L,r)
 
+   !Velocidades
+   media=0.0!1.5*epsilon/kb
+   call Init_rand(N,real(1.0,8),v,'nor',media)
+
+   !Fuerzas
+   call fuerzas(f, r, N, sigma, epsilon, L, rc2)
+
+   dt = dte
+   !Loop de estabilizacion
+   do j = 1, nprevio
+
+      !calculo posiciones nuevas
+      call pos_1(f, r, N, m, dt, L)! r(t+dt)
+
+      !calculo fuerza nueva
+      call fuerzas(f, r, N, sigma, epsilon, L, rc2)
+
+   end do
+
+
+   dt = dtm
+
+   !Loop de equilibracion
+   do j = 1, nequilibracion
 
       !calculo posiciones nuevas
       call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
-      !v(t+ 1/2 dt)
-      ! vaux = velocidadintermedia(f,v,m,N,dt)
-      v = velocidadintermedia(f,v,m,N,dt)
+      !calculo fuerza y potencial nuevos
+      ! call calculos(u, f, r, N, sigma,epsilon, L,rc2) !f(t+dt)
+      call fuerzas(f, r, N, sigma, epsilon, L, rc2)
+
+      !v(t+dt)
+      call velocidadverlet(f,v,m,N,dt)
+
+   end do
+
+
+
+   !Loop de MD
+   dt = dtm
+   do i = 1, nmd
+
+      !calculo posiciones nuevas
+      call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
       !calculo fuerza y potencial nuevos
       call calculos(u, f, r, N, sigma,epsilon, L,rc2) !f(t+dt)
 
       !v(t+dt)
-      ! v = velocidadintermedia(f,vaux,m,N,dt)
-      v = velocidadintermedia(f,v,m,N,dt)
+      call velocidadverlet(f,v,m,N,dt)
 
       ! Saco datos
       if ( MOD(i,nstepscalc)== 0 ) then
@@ -150,16 +143,15 @@ program md_g3
          write(oute,*) (i*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
          call savePosInFile (r, N, outp)
 
-         write(stdout,*) "paso", i
       end if
 
    end do
 
-   !Guardo ultimo punto
-   !Energia cinetica
-   ec = calc_ecinetica(v,N,m)
-   call savePosInFile (r, N, outp)
-   write(oute,*) (nmd*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
+   ! !Guardo ultimo punto
+   ! !Energia cinetica
+   ! ec = calc_ecinetica(v,N,m)
+   ! call savePosInFile (r, N, outp)
+   ! write(oute,*) (nmd*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
 
    close(outp)
    close(oute)
