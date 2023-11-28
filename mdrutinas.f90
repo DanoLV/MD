@@ -92,7 +92,7 @@ CONTAINS
 
       !Inicializo variables
       u = 0.0
-      f = 0.0r
+      f = 0.0
       ucut = U_r(rc2**(0.5),sigma,epsilon)
 
       !Calculo todas las interacciones de pares
@@ -187,7 +187,7 @@ CONTAINS
       INTEGER :: i, j
 
       !Inicializo potencial
-      u = 0r
+      u = 0
 
       !Calculo todas las interacciones de pares
       do i = 1, N-1
@@ -302,4 +302,4 @@ CONTAINS
 
    end SUBROUTINE force_verlet
 
-END MODULE mdrutinasr
+END MODULE mdrutinas
