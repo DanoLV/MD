@@ -76,7 +76,7 @@ CONTAINS
       ! $omp parallel do reduction(+:calc_ecinetica)
       do i = 1, N
          calc_ecinetica =  v(i,1)**2+v(i,2)**2+v(i,3)**2 + calc_ecinetica
-      end dor
+      end do
       ! $omp end parallel do
 
       calc_ecinetica = 0.5*m*calc_ecinetica
