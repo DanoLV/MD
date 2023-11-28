@@ -1,8 +1,8 @@
 !Rutinas generales de MD
-MODULE mdrutinas
+MODULE mdrutinas3b
    use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
    use ziggurat
-   use globals
+!    use globals
    USE OMP_LIB
    IMPLICIT NONE
 
@@ -73,11 +73,11 @@ CONTAINS
       INTEGER :: i, N
 
       calc_ecinetica = 0
-      ! $omp parallel do reduction(+:calc_ecinetica)
+      !$omp parallel do reduction(+:calc_ecinetica)
       do i = 1, N
          calc_ecinetica =  v(i,1)**2+v(i,2)**2+v(i,3)**2 + calc_ecinetica
-      end dor
-      ! $omp end parallel do
+      end do
+      !$omp end parallel do
 
       calc_ecinetica = 0.5*m*calc_ecinetica
 
@@ -92,7 +92,7 @@ CONTAINS
 
       !Inicializo variables
       u = 0.0
-      f = 0.0r
+      f = 0.0
       ucut = U_r(rc2**(0.5),sigma,epsilon)
 
       !Calculo todas las interacciones de pares
@@ -133,11 +133,11 @@ CONTAINS
       ! REAL(kind=8), intent(out):: ec
       INTEGER :: N, i
 
-      ! $OMP parallel do
+      !$OMP parallel do
       do i = 1, N
          v(i,:) = v(i,:)+0.5*dt/m*f(i,:)
       end do
-      ! $OMP end parallel do
+      !$OMP end parallel do
 
    END SUBROUTINE velocidadverlet
 
@@ -187,7 +187,7 @@ CONTAINS
       INTEGER :: i, j
 
       !Inicializo potencial
-      u = 0r
+      u = 0
 
       !Calculo todas las interacciones de pares
       do i = 1, N-1
@@ -287,19 +287,4 @@ CONTAINS
       ! $OMP end parallel do
    END SUBROUTINE
 
-   SUBROUTINE force_verlet(f, v, N, m, dt, T, gama)
-      REAL(kind=8), intent(in):: m, dt, T, gama, v(N,3)
-      INTEGER, intent(in):: N
-      REAL(kind=8), intent(inout):: f(N,3)
-      real(kind=8) :: sigma
-      INTEGER :: i
-
-      sigma = (2*T*gama*m/dt)**(0.5)
-
-      do i = 1, N
-         f(i,:) = f(i,:) - gama * v(i,:) + sigma * [rnor(),rnor(),rnor()]
-      end do
-
-   end SUBROUTINE force_verlet
-
-END MODULE mdrutinasr
+END MODULE

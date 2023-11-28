@@ -10,7 +10,7 @@ program md_g3
    implicit none
    logical :: es
    integer :: seed,i,j,N,nmd, oute, outp, nstepscalc, nprevio, nequilibracion, nproc
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,gama
    real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:)
    character(20) :: filee, filep
 
@@ -41,19 +41,22 @@ program md_g3
    filep = "positions.xyz"
    sigma= 1
    epsilon = 1
-   rc2 = (2.5*sigma)**2
-   m = 1
-   dte= 0.05
-   dtm = 0.0005
-   nmd=100000
    kb=1
+   T = 2.5*epsilon/kb
+   m = 1
+   gama = 0.5
+   rc2 = (2.5*sigma)**2
+   dte= 0.01
+   dtm = 0.001
+   nmd=100000
+
    densidad = 0.3
-   nstepscalc = 100
+   nstepscalc = 500
    nprevio = 10000
-   nequilibracion = 10000
+   nequilibracion = 50000
 
    ! Recibir parametros N, L
-   L = 15
+   L = 10
    N = INT(densidad * L**3)
 
    ! Inicializar variables
@@ -68,7 +71,6 @@ program md_g3
    allocate(vaux(N,3))
    vaux=0
 
-
    !abro archivo para la energia
    oute=15
    OPEN(unit=oute,file=filee, status='replace', position='append')
@@ -76,7 +78,7 @@ program md_g3
    !abro archivo para las posiciones
    outp=4
    OPEN(unit=outp,file=filep, status='replace', position='append')
-   call savePosInFile (r, N, outp)
+   ! call savePosInFile (r, N, outp)
 
    ! Inicializar vectores
    !Posiciones
@@ -111,6 +113,9 @@ program md_g3
       ! call calculos(u, f, r, N, sigma,epsilon, L,rc2) !f(t+dt)
       call fuerzas(f, r, N, sigma, epsilon, L, rc2)
 
+      !Langevine
+      call force_verlet(f, v, N, m, dt, T, gama)
+
       !v(t+dt)
       call velocidadverlet(f,v,m,N,dt)
 
@@ -128,6 +133,9 @@ program md_g3
       !calculo fuerza y potencial nuevos
       call calculos(u, f, r, N, sigma,epsilon, L,rc2) !f(t+dt)
 
+      !Langevine
+      call force_verlet(f, v, N, m, dt, T, gama)
+
       !v(t+dt)
       call velocidadverlet(f,v,m,N,dt)
 
@@ -137,7 +145,7 @@ program md_g3
          !Energia cinetica
          ec = calc_ecinetica(v,N,m)
 
-         write(oute,*) (i*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
+         write(oute,*) (i*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N,'',2*ec/(3*N*kb)
          call savePosInFile (r, N, outp)
 
       end if
