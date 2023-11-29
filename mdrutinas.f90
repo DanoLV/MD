@@ -73,11 +73,11 @@ CONTAINS
       INTEGER :: i, N
 
       calc_ecinetica = 0
-      ! $omp parallel do reduction(+:calc_ecinetica)
+      !$omp parallel do reduction(+:calc_ecinetica)
       do i = 1, N
          calc_ecinetica =  v(i,1)**2+v(i,2)**2+v(i,3)**2 + calc_ecinetica
       end do
-      ! $omp end parallel do
+      !$omp end parallel do
 
       calc_ecinetica = 0.5*m*calc_ecinetica
 
@@ -133,11 +133,11 @@ CONTAINS
       ! REAL(kind=8), intent(out):: ec
       INTEGER :: N, i
 
-      ! $OMP parallel do
+      !$OMP parallel do
       do i = 1, N
          v(i,:) = v(i,:)+0.5*dt/m*f(i,:)
       end do
-      ! $OMP end parallel do
+      !$OMP end parallel do
 
    END SUBROUTINE velocidadverlet
 
@@ -250,7 +250,7 @@ CONTAINS
       ! real(kind=8) :: rrel(3), r2,faux, raux(3)
       INTEGER :: i, j
 
-      ! $OMP parallel do
+      !$OMP parallel do
       do i = 1, N
          r(i,:) = r(i,:) + v(i,:)*dt + (0.5/m)* f(i,:)*dt**2
 
@@ -265,7 +265,7 @@ CONTAINS
          end do
          ! $OMP end parallel do
       end do
-      ! $OMP end parallel do
+      !$OMP end parallel do
 
    END SUBROUTINE
 
@@ -275,7 +275,7 @@ CONTAINS
       REAL(kind=8), intent(out):: r(N,3)
       INTEGER :: i, j
 
-      ! $OMP parallel do
+      !$OMP parallel do
       do i = 1, N
          r(i,:) = r(i,:) + 0.5* f(i,:)/m*dt**2
          !Condicion periodica de contorno
@@ -284,7 +284,7 @@ CONTAINS
             if(r(i,j).lt.0.0) r(i,j) = r(i,j) + L
          end do
       end do
-      ! $OMP end parallel do
+      !$OMP end parallel do
    END SUBROUTINE
 
    SUBROUTINE force_verlet(f, v, N, m, dt, T, gama)

@@ -42,7 +42,7 @@ program md_g3
    sigma= 1
    epsilon = 1
    kb=1
-   T = 2.5*epsilon/kb
+   T = 0.5*epsilon/kb
    m = 1
    gama = 0.5
    rc2 = (2.5*sigma)**2
