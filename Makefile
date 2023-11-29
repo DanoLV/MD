@@ -5,7 +5,7 @@ fcomp = gfortran #ifort # /opt/intel/compiler70/ia32/bin/ifc
 # So: not use -O3 WITH -g option
 flags =  -O3 -fopenmp
 # Remote compilation -fopenmp
-OBJS = ziggurat.o mdrutinas.o md_g3b.o
+OBJS = ziggurat.o mdrutinas3b.o md_g3b.o
 
 .SUFFIXES:            # this deletes the default suffixes 
 .SUFFIXES: .f90 .o    # this defines the extensions I want 
@@ -22,4 +22,4 @@ clean:
 	rm ./*.o ./*.mod	
 
 
-MD_G3b.o: md_g3b.f90 ziggurat.o mdrutinas.o
+MD_G3b.o: md_g3b.f90 ziggurat.o mdrutinas3b.o

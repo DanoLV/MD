@@ -4,19 +4,76 @@ program md_g3
    use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit, stderr=>error_unit
    use globals
    use ziggurat
-   use mdrutinas
+   use mdrutinas3b
    use omp_lib
 
    implicit none
    logical :: es
-   integer :: seed,i,j,N,nmd, oute, outp, nstepscalc, nprevio, nequilibracion, nproc
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,gama
+   integer :: seed,i,j,N,nmd, oute, outp, nstepscalc, nprevio, nmdt, nproc, punto
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp,gama,presion
    real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:)
-   character(20) :: filee, filep
+   character(len=50) :: filee, filep,str
 
 !************************************************
-   real :: start, finish
-   call cpu_time(start)
+   ! real :: start, finish
+!************************************************
+
+!************************************************
+! Manejar argumentos de linea de comandos
+   integer :: num_args, ix, stat
+   character(len=50), dimension(:), allocatable :: args
+
+   num_args = command_argument_count()
+   if ( num_args > 0 ) then
+
+
+      allocate(args(num_args))
+
+      do ix = 1, num_args
+
+         call get_command_argument(ix,args(ix))
+
+         ! Parser de opciones
+         select case(args(ix))
+
+            ! Densidad
+          case('-d')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  densidad
+
+            ! Temperatura
+          case('-T')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  T
+
+            ! Pasos de MD a ejecutar
+          case('-nmd')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  nmd
+
+            ! Pasos de MD para termalizar
+          case('-nmdt')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  nmdt
+
+            !punto para nombre archivo
+          case('-punto')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  punto
+
+            !Pasos cada cuanto se guarda en salida
+          case('-nsave')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  nstepscalc
+
+         end select
+
+      end do
+   end if
+
+!************************************************
+   ! call cpu_time(start)
+!************************************************
 !************************************************
 ![NO TOCAR] Inicializa generador de número random
 
@@ -37,27 +94,33 @@ program md_g3
    ! write(stdout,*) 'procesadores: ',nproc
    call omp_set_dynamic(.true.)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   filee = "energia.dat"
-   filep = "positions.xyz"
+   !filee = "datos"+i+".dat"
+   print *, punto
+   write(str,'(I0)') punto
+   filee = "datos" // trim(str) // ".dat"
+   ! filep =  "positions"+i+".xyz"
+   filep =  "positions" // trim(str) // ".xyz"
+
+   ! nstepscalc = 100
+   nprevio = 10000
    sigma= 1
    epsilon = 1
    kb=1
-   T = 0.5*epsilon/kb
+   ! T = 1.1*epsilon/kb
    m = 1
    gama = 0.5
    rc2 = (2.5*sigma)**2
-   dte= 0.01
-   dtm = 0.001
-   nmd=100000
-
-   densidad = 0.3
-   nstepscalc = 500
-   nprevio = 10000
-   nequilibracion = 50000
+   dte= 0.02
+   dtm = 0.002
+   ! nmdt = 50000
+   ! nmd=50000
+   ! densidad = 0.3
 
    ! Recibir parametros N, L
-   L = 10
-   N = INT(densidad * L**3)
+   N = 300
+   L = (real(N/densidad,8))**(1.0/3.0)
+   ! L = 10
+   ! N = INT(densidad * L**3)
 
    ! Inicializar variables
    allocate(r(N,3))
@@ -104,7 +167,7 @@ program md_g3
 !************************************************
    !Loop de equilibracion
    dt = dtm
-   do j = 1, nequilibracion
+   do j = 1, nmdt
 
       !calculo posiciones nuevas
       call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
@@ -144,8 +207,9 @@ program md_g3
 
          !Energia cinetica
          ec = calc_ecinetica(v,N,m)
-
-         write(oute,*) (i*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N,'',2*ec/(3*N*kb)
+         Temp = 2*ec/(3*N*kb)
+         presion = calc_presion(N,L,densidad,kb,Temp,r,f)
+         write(oute,*) (i*dtm+nmdt*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N,'', Temp, densidad, presion
          call savePosInFile (r, N, outp)
 
       end if
@@ -156,7 +220,7 @@ program md_g3
    ! !Energia cinetica
    ! ec = calc_ecinetica(v,N,m)
    ! call savePosInFile (r, N, outp)
-   ! write(oute,*) (nmd*dtm+nequilibracion*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
+   ! write(oute,*) (nmd*dtm+nmdt*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
 
    close(outp)
    close(oute)
@@ -171,7 +235,7 @@ program md_g3
 ![FIN no Tocar]
 
 !************************************************
-   call cpu_time(finish)
+   ! call cpu_time(finish)
    ! print '("Time = ",f6.3," seconds.")',finish-start
 
 !************************************************
