@@ -14,13 +14,13 @@ T=1.1
 densidad=(0.001 0.01 0.1 0.2 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.8 0.9 1.0)
 
 # Pasos de montecarlo por temperatura
-pasomd=1000
+pasomd=500000
 
 # Pasos para termalizar en la primera corrida
-pasosterm=1000
+pasosterm=500000
 
 # Pasos cada cuanto se guardan datos en archivos de salida
-pasossave=100
+pasossave=500
 
 # Ejecusion en funsion de cambio de densidad a T cte
 for i in ${!densidad[@]};
@@ -29,7 +29,7 @@ do
 done
 
 # Proceso los datos
-python3 estadistica.py -o datosEstadisticaT.dat -cantarch ${#densidad[@]}
+python3 estadistica.py -o datosEstadisticaDensidad.dat -cantarch ${#densidad[@]}
 
 # # muestro los graficos
 # python3 plotDatosT.py -i datosEstadisticaT.dat 
