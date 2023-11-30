@@ -83,42 +83,17 @@ CONTAINS
 
    END FUNCTION
 
-   real(kind=8) function calc_presion(N,L,densidad,kb,Temp,r,f)
-      real(kind=8) :: L, densidad,kb,Temp,r(N,3),f(N,3), rrel(3)
-      integer :: N, i, j
-
-      calc_presion = 0.0
-
-      !Calculo todas las interacciones de pares
-      do i = 1, N-1
-
-         do j = i + 1, N
-
-            !Vector posicion relativa + condicion periodica de contorno
-            rrel = r(i,:)-r(j,:)
-            ! rrel = rrel - L * INT(2*rrel / L)
-
-            !calculo de interaccion
-            calc_presion = f(i,1) * rrel(1)+f(i,2) * rrel(2)+f(i,3) * rrel(3)
-
-         end do
-
-      end do
-
-      calc_presion = densidad*kb*Temp + 1/(3*L**3)*calc_presion/N
-
-   end function calc_presion
-
-   SUBROUTINE calculos(u, f, r, N, sigma, epsilon, L, rc2)
+   SUBROUTINE calculos(u, f, r, N, sigma, epsilon, L, rc2, pvirial)
       REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L,rc2
       INTEGER, intent(in):: N
-      REAL(kind=8), intent(out):: u, f(N,3)
-      real(kind=8) :: rrel(3), r2,faux, raux(3), ucut
+      REAL(kind=8), intent(out):: u, f(N,3), pvirial
+      real(kind=8) :: rrel(3), r2, faux(3), raux(3), ucut
       INTEGER :: i, j
 
       !Inicializo variables
       u = 0.0
       f = 0.0
+      pvirial = 0.0
       ucut = U_r(rc2**(0.5),sigma,epsilon)
 
       !Calculo todas las interacciones de pares
@@ -141,13 +116,16 @@ CONTAINS
 
                !calculo de fuerzas
                faux = fuerza(r2, sigma, epsilon, rc2, L)
-               f(i,:) = faux*rrel+f(i,:) ! f(t+dt)
-               f(j,:) = -faux*rrel+f(j,:)
+               pvirial = faux(1)*rrel(1)+faux(2)*rrel(2)+faux(3)*rrel(3) + pvirial
+               f(i,:) = faux+f(i,:) ! f(t+dt)
+               f(j,:) = -faux+f(j,:)
 
             end if
          end do
 
       end do
+
+      pvirial = pvirial/N
 
       return
 
