@@ -87,7 +87,7 @@ CONTAINS
       REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L,rc2
       INTEGER, intent(in):: N
       REAL(kind=8), intent(out):: u, f(N,3), pvirial
-      real(kind=8) :: rrel(3), r2, faux(3), raux(3), ucut
+      real(kind=8) :: rrel(3), r2, faux(3), raux(3), ucut, aux
       INTEGER :: i, j
 
       !Inicializo variables
@@ -95,7 +95,7 @@ CONTAINS
       f = 0.0
       pvirial = 0.0
       ucut = U_r(rc2**(0.5),sigma,epsilon)
-
+      print *, 'paso'
       !Calculo todas las interacciones de pares
       do i = 1, N-1
 
@@ -115,7 +115,8 @@ CONTAINS
                u = u + U_r(r2**(0.5),sigma,epsilon)- ucut
 
                !calculo de fuerzas
-               faux = fuerza(r2, sigma, epsilon, rc2, L)
+               aux = fuerza(r2, sigma, epsilon, rc2, L)
+               faux= aux*rrel
                pvirial = faux(1)*rrel(1)+faux(2)*rrel(2)+faux(3)*rrel(3) + pvirial
                f(i,:) = faux+f(i,:) ! f(t+dt)
                f(j,:) = -faux+f(j,:)
@@ -149,7 +150,7 @@ CONTAINS
       REAL(kind=8), intent(in):: sigma, epsilon, r(N,3), L, rc2
       INTEGER, intent(in):: N
       REAL(kind=8), intent(out):: f(N,3)
-      real(kind=8) :: rrel(3), r2,faux
+      real(kind=8) :: rrel(3), r2,aux
       INTEGER :: i, j
 
       !Inicializo variables
@@ -171,9 +172,9 @@ CONTAINS
             if ( r2 < rc2 ) then
 
                !calculo de fuerzas
-               faux = fuerza(r2, sigma, epsilon, rc2, L)
-               f(i,:) = faux*rrel+f(i,:) ! f(t+dt)
-               f(j,:) = -faux*rrel+f(j,:)
+               aux = fuerza(r2, sigma, epsilon, rc2, L)
+               f(i,:) = aux*rrel+f(i,:) ! f(t+dt)
+               f(j,:) = -aux*rrel+f(j,:)
 
             end if
          end do

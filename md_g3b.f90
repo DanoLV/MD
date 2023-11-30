@@ -10,8 +10,8 @@ program md_g3
    implicit none
    logical :: es
    integer :: seed,i,j,N,nmd, oute, outp, nstepscalc, nprevio, nmdt, nproc, punto
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp,gama,presion
-   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:), pvirial
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp,gama,presion, pvirial
+   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:)
    character(len=50) :: filee, filep,str
 
 !************************************************
@@ -211,7 +211,7 @@ program md_g3
       call pos_verlet(f, v, r, N, m, dt, L)
 
       !calculo fuerza y potencial nuevos
-      call calculos(u, f, r, N, sigma,epsilon, L,rc2, pvirial) !f(t+dt)
+      ! call calculos(u, f, r, N, sigma, epsilon, L,rc2, pvirial) !f(t+dt)
 
       !Langevine
       call force_verlet(f, v, N, m, dt, T, gama)
