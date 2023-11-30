@@ -56,6 +56,11 @@ program md_g3
             call get_command_argument(ix + 1,args(ix + 1))
             read(args(ix+1),*,iostat=stat)  nmdt
 
+            ! Pasos de minimizacion U
+          case('-nmu')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  nprevio
+
             !punto para nombre archivo
           case('-punto')
             call get_command_argument(ix + 1,args(ix + 1))
@@ -65,6 +70,17 @@ program md_g3
           case('-nsave')
             call get_command_argument(ix + 1,args(ix + 1))
             read(args(ix+1),*,iostat=stat)  nstepscalc
+
+            !Archivo salida datos
+          case('-od')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  filee
+
+            !Archivo salida trayectorias
+          case('-op')
+            call get_command_argument(ix + 1,args(ix + 1))
+            read(args(ix+1),*,iostat=stat)  filep
+
 
          end select
 
@@ -97,12 +113,13 @@ program md_g3
    !filee = "datos"+i+".dat"
    print *, punto
    write(str,'(I0)') punto
-   filee = "datos" // trim(str) // ".dat"
+   filee = trim(filee)  // trim(str) // ".dat" !"datos" // trim(str) // ".dat"
+   ! print *, filee
    ! filep =  "positions"+i+".xyz"
-   filep =  "positions" // trim(str) // ".xyz"
-
-   ! nstepscalc = 100
-   nprevio = 10000
+   filep =  trim(filep) // trim(str) // ".xyz" !"positions" // trim(str) // ".xyz"
+   ! print *, filep
+   ! nstepscalc = 100nprevio
+   ! nprevio = 10000
    sigma= 1
    epsilon = 1
    kb=1
