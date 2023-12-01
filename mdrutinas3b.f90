@@ -95,7 +95,7 @@ CONTAINS
       f = 0.0
       pvirial = 0.0
       ucut = U_r(rc2**(0.5),sigma,epsilon)
-      print *, 'paso'
+
       !Calculo todas las interacciones de pares
       do i = 1, N-1
 
@@ -116,8 +116,9 @@ CONTAINS
 
                !calculo de fuerzas
                aux = fuerza(r2, sigma, epsilon, rc2, L)
+               pvirial = aux*r2+pvirial
                faux= aux*rrel
-               pvirial = faux(1)*rrel(1)+faux(2)*rrel(2)+faux(3)*rrel(3) + pvirial
+               ! pvirial = faux(1)*rrel(1)+faux(2)*rrel(2)+faux(3)*rrel(3) + pvirial
                f(i,:) = faux+f(i,:) ! f(t+dt)
                f(j,:) = -faux+f(j,:)
 
@@ -125,8 +126,6 @@ CONTAINS
          end do
 
       end do
-
-      pvirial = pvirial/N
 
       return
 

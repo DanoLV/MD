@@ -12,16 +12,16 @@ clear
 #-------------------------------------------------------------------------------------------------------------
 
 # Pasos de montecarlo por temperatura
-pasomd= 500000
+pasomd=100000
 
 # Pasos para termalizar en la primera corrida
-pasosterm= 500000
+pasosterm=100000
 
 # Pasos para termalizar en la primera corrida
-pasosminu= 5000
+pasosminu=5000
 
 # Pasos cada cuanto se guardan datos en archivos de salida
-pasossave= 500
+pasossave=500
 
 #-------------------------------------------------------------------------------------------------------------
 # Corrida en funsion de la densidad

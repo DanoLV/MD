@@ -134,7 +134,7 @@ program md_g3
    ! densidad = 0.3
 
    ! Recibir parametros N, L
-   N = 300
+   N = 200
    L = (real(N/densidad,8))**(1.0/3.0)
    ! L = 10
    ! N = INT(densidad * L**3)
@@ -190,7 +190,6 @@ program md_g3
       call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
       !calculo fuerza y potencial nuevos
-      ! call calculos(u, f, r, N, sigma,epsilon, L,rc2) !f(t+dt)
       call fuerzas(f, r, N, sigma, epsilon, L, rc2)
 
       !Langevine
@@ -201,7 +200,6 @@ program md_g3
 
    end do
 
-
 !************************************************
    !Loop de MD
    dt = dtm
@@ -211,7 +209,7 @@ program md_g3
       call pos_verlet(f, v, r, N, m, dt, L)
 
       !calculo fuerza y potencial nuevos
-      ! call calculos(u, f, r, N, sigma, epsilon, L,rc2, pvirial) !f(t+dt)
+      call calculos(u, f, r, N, sigma, epsilon, L,rc2, pvirial) !f(t+dt)
 
       !Langevine
       call force_verlet(f, v, N, m, dt, T, gama)
