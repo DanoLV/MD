@@ -19,8 +19,8 @@ axis.plot(y[:,0],y[:,2],'b')
 
 # axis.set_xlim([9900000000,10000000000])
 # axis.set_ylim([-0.5,3])
-# axis.set_ylabel('$<Epotencial>_{sitio}$')
-# axis.set_xlabel('Nmd')
+axis.set_ylabel('P')
+axis.set_xlabel('T')
 axis.grid(True, which='both')
 # axis[a].plot(y[:,0],y[:,1])
 # axis[a].set_ylabel('$<Epotencial>_{sitio}$')
@@ -39,6 +39,6 @@ plt.subplots_adjust(hspace=0.4)# a=1
 # axis[a].grid(True, which='both')
 
 
-mng = plt.get_current_fig_manager()
+# mng = plt.get_current_fig_manager()
 # mng.resize(*mng.window.maxsize())
 plt.show()

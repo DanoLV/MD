@@ -131,6 +131,43 @@ CONTAINS
 
    END SUBROUTINE calculos
 
+   SUBROUTINE rdf(r, N, L, hrdf, nhrdf, delta)
+      REAL(kind=8), intent(in):: r(N,3), L
+      INTEGER, intent(in):: N, nhrdf
+      REAL(kind=8), intent(out)::hrdf(2,nhrdf)
+      real(kind=8) :: rrel(3), dist, lim, delta
+      INTEGER :: i, j, k
+
+      !Calculo todas las interacciones de pares
+      do i = 1, nhrdf
+         hrdf(i,1)= delta*(i)
+         hrdf(i,2)= 0.0
+      end do
+
+      !Calculo todas las interacciones de pares
+      do i = 1, N
+         do j = 1, N
+            !Vector posicion relativa + condicion periodica de contorno
+            rrel = r(i,:)-r(j,:)
+            rrel = rrel - L * INT(2*rrel / L)
+
+            !distanciamake
+            dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+
+            k = CEILING(dist/delta)
+            ! if (k>100 .or. k<0) print *, 'k=',k
+
+            hrdf(k,2)= 1.0 + hrdf(k,2)
+
+         end do
+      end do
+
+      do i = 1, nhrdf
+         hrdf(i,2)= hrdf(i,2)/N
+      end do
+
+   END SUBROUTINE rdf
+
    SUBROUTINE velocidadverlet(f, v, m, N, dt)!, ec)
       REAL(kind=8), intent(in):: f(N,3), m, dt
       REAL(kind=8), intent(inout):: v(N,3)

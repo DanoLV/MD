@@ -9,10 +9,11 @@ program md_g3
 
    implicit none
    logical :: es
-   integer :: seed,i,j,N,nmd, oute, outp, nstepscalc, nprevio, nmdt, nproc, punto
-   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp,gama,presion, pvirial
-   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:)
-   character(len=50) :: filee, filep,str
+   integer :: seed,i,j,N,nmd, oute, outp, outrdf, nstepscalc, nprevio, nmdt, nproc, punto,nr
+   real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp
+   real(kind=8):: gama,presion, pvirial, deltar
+   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:),hrdf(:,:)
+   character(len=50) :: filee, filep,str, filerdf
 
 !************************************************
    ! real :: start, finish
@@ -127,8 +128,8 @@ program md_g3
    m = 1
    gama = 0.5
    rc2 = (2.5*sigma)**2
-   dte= 0.02
-   dtm = 0.002
+   dte= 0.002
+   dtm = 0.0001
    ! nmdt = 50000
    ! nmd=50000
    ! densidad = 0.3
@@ -151,6 +152,10 @@ program md_g3
    allocate(vaux(N,3))
    vaux=0
 
+   nr=200
+   allocate(hrdf(2,nr))
+   hrdf=0
+
    !abro archivo para la energia
    oute=15
    OPEN(unit=oute,file=filee, status='replace', position='append')
@@ -158,7 +163,6 @@ program md_g3
    !abro archivo para las posiciones
    outp=4
    OPEN(unit=outp,file=filep, status='replace', position='append')
-   ! call savePosInFile (r, N, outp)
 
    ! Inicializar vectores
    !Posiciones
@@ -182,7 +186,7 @@ program md_g3
    end do
 
 !************************************************
-   !Loop de equilibracion
+   !Loop de termalizacion
    dt = dtm
    do j = 1, nmdt
 
@@ -231,12 +235,18 @@ program md_g3
 
    end do
 
-   ! !Guardo ultimo punto
-   ! !Energia cinetica
-   ! ec = calc_ecinetica(v,N,m)
-   ! call savePosInFile (r, N, outp)
-   ! write(oute,*) (nmd*dtm+nmdt*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N
-
+   ! Sacar datos de rdf----------------------------------------------------------------------
+   deltar = L/nr
+   call rdf(r, N, L, hrdf, nr, deltar)
+   filerdf = "rdf" // trim(filee)
+   print *, filerdf
+   outrdf = 15
+   OPEN(unit=outrdf,file=filerdf, status='replace', position='append')
+   do i = 1, nr
+      write(outrdf,*) hrdf(i,1), hrdf(i,2)
+   end do
+   close(outrdf)
+   !----------------------------------------------------------------------------------------
    close(outp)
    close(oute)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

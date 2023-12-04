@@ -16,8 +16,8 @@ axis.plot(y[:,1],y[:,2],'b')
 
 # axis.set_xlim([9900000000,10000000000])
 # axis.set_ylim([-0.5,3])
-# axis.set_ylabel('$<Epotencial>_{sitio}$')
-# axis.set_xlabel('Nmd')
+axis.set_ylabel('P')
+axis.set_xlabel('Densidad')
 axis.grid(True, which='both')
 
 # Mostrar el grafico

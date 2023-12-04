@@ -10,17 +10,17 @@ figure, axis = plt.subplots(1)
 # axis[a,b].set_xlabel('T')
 # axis[a,b].grid(True, which='both')
 # Leer datos del archivo
-y = np.genfromtxt('datosT0.dat')
+y = np.genfromtxt('rdfdatosT5.dat')
 
 # Construir los subplot de los datos
 a=0
 b=0
 axis.plot(y[:,0],y[:,1],'r')
 # axis.plot(y[:,0],y[:,2],'b')
-# axis.plot(y[:,0],y[:,3],'g')
-axis.plot(y[:,0],y[:,4],'black')
-axis.plot(y[:,0],y[:,5],'g')
-axis.plot(y[:,0],y[:,6])
+# # axis.plot(y[:,0],y[:,3],'g')
+# axis.plot(y[:,0],y[:,4],'black')
+# axis.plot(y[:,0],y[:,5],'g')
+# axis.plot(y[:,0],y[:,6])
 # axis.set_xlim([9900000000,10000000000])
 # axis.set_ylim([-0.5,3])
 # axis.set_ylabel('$<Epotencial>_{sitio}$')
