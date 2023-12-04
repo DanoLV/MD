@@ -11,8 +11,8 @@ program md_g3
    logical :: es
    integer :: seed,i,j,N,nmd, oute, outp, outrdf, nstepscalc, nprevio, nmdt, nproc, punto,nr
    real(kind=8):: L,sigma,epsilon,u,fvec(3),rc2,dt,m,kb,media, densidad,ec,dte,dtm,T,Temp
-   real(kind=8):: gama,presion, pvirial, deltar
-   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:),hrdf(:,:)
+   real(kind=8):: gama,presion, pvirial, deltar,raux
+   real(kind=8), allocatable ::r(:,:),f(:,:),v(:,:),vaux(:,:),hrdf(:,:),auxrdf(:,:)
    character(len=50) :: filee, filep,str, filerdf
 
 !************************************************
@@ -152,10 +152,6 @@ program md_g3
    allocate(vaux(N,3))
    vaux=0
 
-   nr=200
-   allocate(hrdf(2,nr))
-   hrdf=0
-
    !abro archivo para la energia
    oute=15
    OPEN(unit=oute,file=filee, status='replace', position='append')
@@ -205,15 +201,56 @@ program md_g3
    end do
 
 !************************************************
-   !Loop de MD
-   dt = dtm
-   do i = 1, nmd
+   ! !Loop de MD
+   ! dt = dtm
+   ! do i = 1, nmd
 
-      !calculo (t+dt) y v(t+ 1/2 dt)
-      call pos_verlet(f, v, r, N, m, dt, L)
+   !    !calculo (t+dt) y v(t+ 1/2 dt)
+   !    call pos_verlet(f, v, r, N, m, dt, L)
+
+   !    !calculo fuerza y potencial nuevos
+   !    call calculos(u, f, r, N, sigma, epsilon, L,rc2, pvirial) !f(t+dt)
+
+   !    !Langevine
+   !    call force_verlet(f, v, N, m, dt, T, gama)
+
+   !    !v(t+dt)
+   !    call velocidadverlet(f,v,m,N,dt)
+
+   !    ! Saco datos
+   !    if ( MOD(i,nstepscalc)== 0 ) then
+
+   !       !Energia cinetica
+   !       ec = calc_ecinetica(v,N,m)
+   !       Temp = 2*ec/(3*N*kb)
+   !       presion = densidad*kb*Temp + 1/(3*L**3)*pvirial
+   !       write(oute,*) (i*dtm+nmdt*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N,'', Temp, densidad, presion
+   !       call savePosInFile (r, N, outp)
+
+   !    end if
+
+   ! end do
+
+   !************************************************
+   !Loop de rdf
+   dt = dtm
+
+   nr=50
+   deltar = L/nr
+   nr = ceiling((3**(1.0/3.0))*nr)
+   allocate(hrdf(2,nr))
+   allocate(auxrdf(2,nr))
+   hrdf=0
+   i=0
+   print *, nr, 3**(1.0/3.0) * L, nr*deltar
+
+   do j = 1, nmdt
+
+      !calculo posiciones nuevas
+      call pos_verlet(f, v, r, N, m, dt, L) ! r(t+dt)
 
       !calculo fuerza y potencial nuevos
-      call calculos(u, f, r, N, sigma, epsilon, L,rc2, pvirial) !f(t+dt)
+      call fuerzas(f, r, N, sigma, epsilon, L, rc2)
 
       !Langevine
       call force_verlet(f, v, N, m, dt, T, gama)
@@ -221,29 +258,32 @@ program md_g3
       !v(t+dt)
       call velocidadverlet(f,v,m,N,dt)
 
-      ! Saco datos
       if ( MOD(i,nstepscalc)== 0 ) then
 
-         !Energia cinetica
-         ec = calc_ecinetica(v,N,m)
-         Temp = 2*ec/(3*N*kb)
-         presion = densidad*kb*Temp + 1/(3*L**3)*pvirial
-         write(oute,*) (i*dtm+nmdt*dte+nprevio*dtm), ' ',u/N, ' ',ec/N, ' ',(u+ec)/N,'', Temp, densidad, presion
-         call savePosInFile (r, N, outp)
+         call rdf(r, N, L, auxrdf, nr, deltar)
+         hrdf = auxrdf + hrdf
+         i= i+1
 
       end if
 
    end do
 
+   raux = 4.0/3.0*densidad*(4.D0*DATAN(1.D0)) !4/3*densidad*pi
+   hrdf(2,1)= hrdf(2,1)/(i*raux*(hrdf(1,1))**3)
+
+   do j = 2, nr
+      hrdf(2,j)= hrdf(2,j)/(i*raux*((hrdf(1,j))**3-(hrdf(1,j-1))**3))
+   end do
+
    ! Sacar datos de rdf----------------------------------------------------------------------
-   deltar = L/nr
-   call rdf(r, N, L, hrdf, nr, deltar)
+   ! deltar = L/nr
+   ! call rdf(r, N, L, hrdf, nr, deltar)
    filerdf = "rdf" // trim(filee)
    print *, filerdf
    outrdf = 15
    OPEN(unit=outrdf,file=filerdf, status='replace', position='append')
    do i = 1, nr
-      write(outrdf,*) hrdf(i,1), hrdf(i,2)
+      write(outrdf,*) hrdf(1,i), hrdf(2,i)
    end do
    close(outrdf)
    !----------------------------------------------------------------------------------------

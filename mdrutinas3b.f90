@@ -114,11 +114,11 @@ CONTAINS
                ! calculo de potenciales
                u = u + U_r(r2**(0.5),sigma,epsilon)- ucut
 
-               !calculo de fuerzas
+               !calculo de fuerzas y virial
                aux = fuerza(r2, sigma, epsilon, rc2, L)
                pvirial = aux*r2+pvirial
+
                faux= aux*rrel
-               ! pvirial = faux(1)*rrel(1)+faux(2)*rrel(2)+faux(3)*rrel(3) + pvirial
                f(i,:) = faux+f(i,:) ! f(t+dt)
                f(j,:) = -faux+f(j,:)
 
@@ -127,43 +127,100 @@ CONTAINS
 
       end do
 
-      return
-
    END SUBROUTINE calculos
 
    SUBROUTINE rdf(r, N, L, hrdf, nhrdf, delta)
       REAL(kind=8), intent(in):: r(N,3), L
       INTEGER, intent(in):: N, nhrdf
       REAL(kind=8), intent(out)::hrdf(2,nhrdf)
-      real(kind=8) :: rrel(3), dist, lim, delta
+      real(kind=8) :: rrel(3), dist, lim, delta, aux(3),max
       INTEGER :: i, j, k
 
+      max = L*3**(1.0/3.0)
       !Calculo todas las interacciones de pares
+      print *, nhrdf, delta,max
       do i = 1, nhrdf
-         hrdf(i,1)= delta*(i)
-         hrdf(i,2)= 0.0
+         hrdf(1,i)= real(delta*i,8)
+         hrdf(2,i)= 0.0
       end do
 
       !Calculo todas las interacciones de pares
       do i = 1, N
-         do j = 1, N
+         do j = i+1, N
             !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
-            rrel = rrel - L * INT(2*rrel / L)
+            aux = - L * INT(2*rrel / L)
 
             !distanciamake
             dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
 
-            k = CEILING(dist/delta)
-            ! if (k>100 .or. k<0) print *, 'k=',k
+            if(dist .le. max) then
+               k = CEILING(dist/delta)
 
-            hrdf(k,2)= 1.0 + hrdf(k,2)
+               if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
 
+               hrdf(2,k)= 1.0 + hrdf(2,k)
+            else
+               print *,dist
+            end if
+
+            if (aux(1) .ne. 0.0 .or. aux(2) .ne. 0.0 .or.aux(3) .ne. 0.0 ) then
+               rrel = rrel - aux
+
+               dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+
+               if(dist .le. max) then
+                  k = CEILING(dist/delta)
+
+                  if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
+
+                  hrdf(2,k)= 1.0 + hrdf(2,k)
+               else
+                  print *,dist
+               endif
+
+            end if
          end do
+
+         do j = 1, i-1
+            !Vector posicion relativa + condicion periodica de contorno
+            rrel = r(i,:)-r(j,:)
+            aux = - L * INT(2*rrel / L)
+
+            !distanciamake
+            dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+
+            if(dist .le. max) then
+               k = CEILING(dist/delta)
+
+               if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
+
+               hrdf(2,k)= 1.0 + hrdf(2,k)
+            else
+               print *,dist
+            end if
+
+            if (aux(1) .ne. 0.0 .or. aux(2) .ne. 0.0 .or.aux(3) .ne. 0.0 ) then
+               rrel = rrel - aux
+
+               dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+
+               if(dist .le. max) then
+                  k = CEILING(dist/delta)
+
+                  if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
+
+                  hrdf(2,k)= 1.0 + hrdf(2,k)
+               else
+                  print *,dist
+               endif
+            end if
+         end do
+
       end do
 
       do i = 1, nhrdf
-         hrdf(i,2)= hrdf(i,2)/N
+         hrdf(2,i)= hrdf(2,i)/N
       end do
 
    END SUBROUTINE rdf

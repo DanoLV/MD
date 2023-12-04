@@ -12,16 +12,16 @@ clear
 #-------------------------------------------------------------------------------------------------------------
 
 # Pasos de montecarlo por temperatura
-pasomd=50000
+pasomd=500000
 
 # Pasos para termalizar en la primera corrida
-pasosterm=100000
+pasosterm=500000
 
 # Pasos para termalizar en la primera corrida
-pasosminu=20000
+pasosminu=50000
 
 # Pasos cada cuanto se guardan datos en archivos de salida
-pasossave=200
+pasossave=500
 
 #-------------------------------------------------------------------------------------------------------------
 # Corrida en funsion de la densidad
@@ -48,26 +48,53 @@ pasossave=200
 
 #-------------------------------------------------------------------------------------------------------------
 
-# Densidad
-densidad=0.4
+# # Densidad
+# densidad=0.3
 
-# Temperaturas
-T=()
-for ((i=0;i<=10;i++))
-do
-    Tn=$(echo "0.7+0.07*$i"|bc -l) 
-    T+=($Tn)
-done
+# # Temperaturas
+# T=()
+# for ((i=0;i<=0;i++))
+# do
+#     Tn=$(echo "0.7+0.07*$i"|bc -l) 
+#     T+=($Tn)
+# done
 
-# Ejecución en función de cambio de T a densidad cte  
-for i in ${!T[@]};
-do
-./md_g3b -nmd $pasomd -nmdt $pasosterm -nmu $pasosminu -nsave $pasossave -T ${T[$i]} -d $densidad -punto $i -od 'datosT' -op 'posicionesT'
-done
+# # Ejecución en función de cambio de T a densidad cte  
+# for i in ${!T[@]};
+# do
+# ./md_g3b -nmd $pasomd -nmdt $pasosterm -nmu $pasosminu -nsave $pasossave -T ${T[$i]} -d $densidad -punto $i -od 'datosT' -op 'posicionesT'
+# done
 
-# Proceso los datos
-python3 estadisticaT.py -o datosEstadisticaT.dat -cantarch ${#T[@]} -i 'datosT'
+# # Proceso los datos
+# python3 estadisticaT.py -o datosEstadisticaT.dat -cantarch ${#T[@]} -i 'datosT'
 
 #-------------------------------------------------------------------------------------------------------------
-# muestro los graficos
-python3 plotDatosT.py -i datosEstadisticaT.dat 
+# # muestro los graficos
+# python3 plotDatosT.py -i datosEstadisticaT.dat 
+#-------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------------------
+# Funcion de distribucion radial
+#-------------------------------------------------------------------------------------------------------------
+# Pasos de montecarlo por temperatura
+pasomd=10000
+
+# Pasos para termalizar en la primera corrida
+pasosterm=500000
+
+# Pasos para termalizar en la primera corrida
+pasosminu=50000
+
+# Pasos cada cuanto se guardan datos en archivos de salida
+pasossave=500
+#--------------------------------------------
+# Densidad
+densidad=0.8
+
+# Temperatura
+T=1.1
+#--------------------------------------------
+# for i in ${!T[@]};
+# do
+./md_g3b -nmd $pasomd -nmdt $pasosterm -nmu $pasosminu -nsave $pasossave -T $T -d $densidad -punto 0 -od "datosT($T)D($densidad)" -op 'posicionesT'
+# done
