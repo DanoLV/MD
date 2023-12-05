@@ -11,15 +11,15 @@ figure, axis = plt.subplots(1)
 # axis[a,b].set_xlabel('T')
 # axis[a,b].grid(True, which='both')
 # Leer datos del archivo
-yd = np.genfromtxt('rdfdatosT(1.1)D(0.8)0.dat')
+yd = np.genfromtxt('rdfdatosT(5)D(0.8)0.dat')
 
 # Construir los subplot de los datos
 x = yd[:,0]
 y = yd[:,1]
-cubic_interpolation_model = Rbf(x, y,function='inverse')
+cubic_interpolation_model = Rbf(x, y,function='inverse')#,function='inverse') linear
  
 # Plotting the Graph
-X_=np.linspace(x.min(), x.max(), 1000)
+X_=np.linspace(x.min(), x.max(), 2000)
 Y_=cubic_interpolation_model(X_)
 
 axis.plot(X_,Y_,'r')

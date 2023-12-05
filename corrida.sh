@@ -77,13 +77,16 @@ pasossave=500
 # Funcion de distribucion radial
 #-------------------------------------------------------------------------------------------------------------
 # Pasos de montecarlo por temperatura
-pasomd=10000
+pasomd=0
 
 # Pasos para termalizar en la primera corrida
-pasosterm=500000
+pasosterm=100000
 
 # Pasos para termalizar en la primera corrida
-pasosminu=50000
+pasosminu=20000
+
+# Pasos de RDF
+pasordf=50000
 
 # Pasos cada cuanto se guardan datos en archivos de salida
 pasossave=500
@@ -92,9 +95,9 @@ pasossave=500
 densidad=0.8
 
 # Temperatura
-T=1.1
+T=5
 #--------------------------------------------
 # for i in ${!T[@]};
 # do
-./md_g3b -nmd $pasomd -nmdt $pasosterm -nmu $pasosminu -nsave $pasossave -T $T -d $densidad -punto 0 -od "datosT($T)D($densidad)" -op 'posicionesT'
+./md_g3b -nmd $pasomd -nrdf $pasordf -nmdt $pasosterm -nmu $pasosminu -nsave $pasossave -T $T -d $densidad -punto 0 -od "datosT($T)D($densidad)" -op 'posicionesT'
 # done

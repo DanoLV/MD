@@ -133,90 +133,40 @@ CONTAINS
       REAL(kind=8), intent(in):: r(N,3), L
       INTEGER, intent(in):: N, nhrdf
       REAL(kind=8), intent(out)::hrdf(2,nhrdf)
-      real(kind=8) :: rrel(3), dist, lim, delta, aux(3),max
+      real(kind=8) :: rrel(3), dist, delta, aux(3)
       INTEGER :: i, j, k
 
-      max = L*3**(1.0/3.0)
-      !Calculo todas las interacciones de pares
-      print *, nhrdf, delta,max
       do i = 1, nhrdf
          hrdf(1,i)= real(delta*i,8)
          hrdf(2,i)= 0.0
       end do
 
-      !Calculo todas las interacciones de pares
+
       do i = 1, N
          do j = i+1, N
             !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
-            aux = - L * INT(2*rrel / L)
-
-            !distanciamake
+            ! aux = - L * INT(2*rrel / L)
+            rrel = rrel - L * INT(2*rrel / L)
+            !distancia
             dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+            k = CEILING(dist/delta)
+            ! if(k<=nhrdf)
+            hrdf(2,k)= 1.0 + hrdf(2,k)
 
-            if(dist .le. max) then
-               k = CEILING(dist/delta)
-
-               if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
-
-               hrdf(2,k)= 1.0 + hrdf(2,k)
-            else
-               print *,dist
-            end if
-
-            if (aux(1) .ne. 0.0 .or. aux(2) .ne. 0.0 .or.aux(3) .ne. 0.0 ) then
-               rrel = rrel - aux
-
-               dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
-
-               if(dist .le. max) then
-                  k = CEILING(dist/delta)
-
-                  if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
-
-                  hrdf(2,k)= 1.0 + hrdf(2,k)
-               else
-                  print *,dist
-               endif
-
-            end if
          end do
 
          do j = 1, i-1
             !Vector posicion relativa + condicion periodica de contorno
             rrel = r(i,:)-r(j,:)
-            aux = - L * INT(2*rrel / L)
-
-            !distanciamake
+            rrel = rrel - L * INT(2*rrel / L)
+            !distancia
             dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
+            k = CEILING(dist/delta)
+            ! if(k<=nhrdf)
+            hrdf(2,k)= 1.0 + hrdf(2,k)
 
-            if(dist .le. max) then
-               k = CEILING(dist/delta)
-
-               if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
-
-               hrdf(2,k)= 1.0 + hrdf(2,k)
-            else
-               print *,dist
-            end if
-
-            if (aux(1) .ne. 0.0 .or. aux(2) .ne. 0.0 .or.aux(3) .ne. 0.0 ) then
-               rrel = rrel - aux
-
-               dist = (rrel(1)**2+rrel(2)**2+rrel(3)**2)**(0.5)
-
-               if(dist .le. max) then
-                  k = CEILING(dist/delta)
-
-                  if (k>nhrdf .or. k<1) print *, 'k=',k, 'dist=',dist
-
-                  hrdf(2,k)= 1.0 + hrdf(2,k)
-               else
-                  print *,dist
-               endif
-            end if
          end do
-
       end do
 
       do i = 1, nhrdf
@@ -356,12 +306,11 @@ CONTAINS
          v(i,:) = v(i,:)+0.5*dt/m*f(i,:)
 
          !Condicion periodica de contorno
-         ! $OMP parallel do
          do j = 1, 3
             if(r(i,j).gt.L) r(i,j) = r(i,j) - L
             if(r(i,j).lt.0.0) r(i,j) = r(i,j) + L
          end do
-         ! $OMP end parallel do
+
       end do
       !$OMP end parallel do
 
