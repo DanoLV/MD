@@ -40,7 +40,7 @@ for i in range(0,cant,1):
     T = np.mean(y[:,4])
     densidad = np.mean(y[:,5])
     presion = np.mean(y[:,6])
-    varpresion = np.var(y[:,6])
+    varpresion = np.std(y[:,6])
 
     T = str(T)
     densidad = str(densidad)

@@ -4,7 +4,7 @@ import argparse
 import sys
 
 # Establecer subplots
-figure, axis = plt.subplots(1) 
+figure, axis = plt.subplots(1,2) 
 
 # axis[a,b].set_ylabel('$<E>_{sitio}$')
 # axis[a,b].set_xlabel('T')
@@ -13,32 +13,21 @@ figure, axis = plt.subplots(1)
 y = np.genfromtxt('datosEstadisticaT.dat')
 
 a=0
-b=0
 # axis.plot(y[:,0],y[:,0],'r')
-axis.plot(y[:,0],y[:,2],'b')
+axis[a].plot(y[:,0],y[:,2],'b')
+axis[a].set_ylabel('P')
+axis[a].set_xlabel('T')
+axis[a].grid(True, which='both')
 
-# axis.set_xlim([9900000000,10000000000])
-# axis.set_ylim([-0.5,3])
-axis.set_ylabel('P')
-axis.set_xlabel('T')
-axis.grid(True, which='both')
-# axis[a].plot(y[:,0],y[:,1])
-# axis[a].set_ylabel('$<Epotencial>_{sitio}$')
-# axis[a].set_xlabel('Nmd')
-# axis[a].grid(True, which='both')
-# axis.set_ylim([0,15])
-
-
+a=1
+# axis.plot(y[:,0],y[:,0],'r')
+axis[a].plot(y[:,0],y[:,3],'b')
+axis[a].set_ylabel('$\mathrm{\sigma}_P$')
+axis[a].set_xlabel('T')
+axis[a].grid(True, which='both')
 
 # Mostrar el grafico
-plt.subplots_adjust(hspace=0.4)# a=1
-# b=0
-# axis[a].plot(y[:,0],y[:,2])
-# axis[a].set_ylabel('$<Ecinetica>_{sitio}$')
-# axis[a].set_xlabel('Nmd')
-# axis[a].grid(True, which='both')
-
-
-# mng = plt.get_current_fig_manager()
-# mng.resize(*mng.window.maxsize())
+plt.subplots_adjust(hspace=0.4)
+mng = plt.get_current_fig_manager()
+mng.resize(*mng.window.maxsize())
 plt.show()

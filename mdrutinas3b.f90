@@ -97,7 +97,7 @@ CONTAINS
       ucut = U_r(rc2**(0.5),sigma,epsilon)
 
       !Calculo todas las interacciones de pares
-      do i = 1, N-1
+      do i = 1, N
 
          do j = i + 1, N
 
@@ -123,6 +123,7 @@ CONTAINS
                f(j,:) = -faux+f(j,:)
 
             end if
+
          end do
 
       end do

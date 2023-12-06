@@ -233,7 +233,7 @@ program md_g3
 
       dt = dtm
 
-      nr=200
+      nr=ceiling(L/(0.05)) !200
       deltar = L/nr
 
       allocate(hrdf(2,nr))
