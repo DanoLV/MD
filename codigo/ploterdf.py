@@ -4,10 +4,6 @@ import argparse
 import sys
 from scipy.interpolate import Rbf
 
-plt.rc('axes', labelsize=30) 
-plt.rc('ytick', labelsize=24)
-plt.rc('xtick', labelsize=24)
-
 # Establecer subplots
 figure, axis = plt.subplots(1) 
 
@@ -51,11 +47,8 @@ axis.plot(X3_,Y3_,'b')
 axis.plot(X4_,Y4_,'k')
 axis.set_ylabel('g(r)')
 axis.set_xlabel('r')
+axis.grid(True, which='both')
 axis.set_xlim(0,4)
-axis.grid(True, which='both',linewidth=3,linestyle='--')
-axis.tick_params(width=3)
-for spine in ['top','bottom','left','right']:
-    axis.spines[spine].set_linewidth(3)
 
 # Mostrar el grafico
 plt.subplots_adjust(hspace=0.4)
